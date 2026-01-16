@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Quiet Place - The Sanctuary</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="quiet-page">
+    <div class="container">
+        <nav class="top-nav">
+            <a href="index.html">Home</a>
+            <a href="wall.html">The Wall</a>
+            <a href="rooms.html">The Rooms</a>
+            <a href="about.html">About</a>
+        </nav>
+
+        <header class="page-header">
+            <h1>The Quiet Place</h1>
+            <p class="subtitle">This is just for you.</p>
+        </header>
+
+        <section class="quiet-section">
+            <div class="quiet-intro">
+                <p>Write something. Hold something. Let something go.</p>
+                <p>Nothing here is saved. Nothing is recorded.</p>
+                <p>When you leave, it disappears—but you will have had it.</p>
+                <p class="emphasis">Sometimes that's enough.</p>
+            </div>
+
+            <div class="quiet-space">
+                <textarea id="quietText" class="quiet-textarea" placeholder="This space is yours..."></textarea>
+                <div class="quiet-actions">
+                    <button id="letGoBtn" class="let-go-btn">Let it go</button>
+                </div>
+                <p id="afterText" class="after-text hidden">This was yours. It still is, even now that it's gone.</p>
+            </div>
+        </section>
+
+        <div class="ambient-glow"></div>
+
+        <footer>
+            <a href="index.html">Return to the entrance</a>
+        </footer>
+    </div>
+
+    <script src="js/quiet.js"></script>
+</body>
+</html>
