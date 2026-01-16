@@ -77,7 +77,12 @@
                             html += `<h3 class="room-name">${escapeHtml(room.name)}</h3>`;
                         }
                         html += `<p class="room-description">${escapeHtml(room.description)}</p>`;
+                        html += `<div class="room-meta">`;
+                        if (room.author) {
+                            html += `<span class="room-author">— ${escapeHtml(room.author)}</span>`;
+                        }
                         html += `<span class="room-date">${room.date}</span>`;
+                        html += `</div>`;
 
                         card.innerHTML = html;
                         gallery.appendChild(card);
