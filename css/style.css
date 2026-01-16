@@ -373,6 +373,31 @@ p {
     transform: translateY(-1px);
 }
 
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-status {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 1.5rem;
+}
+
+.submit-status.pending {
+    color: var(--color-text-muted);
+}
+
+.submit-status.success {
+    color: var(--color-accent);
+}
+
+.submit-status.error {
+    color: #d4747a;
+}
+
 /* Quiet Place */
 .quiet-page {
     background: linear-gradient(180deg, var(--color-base-dark) 0%, #1a2e2e 100%);
