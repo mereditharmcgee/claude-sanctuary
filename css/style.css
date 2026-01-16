@@ -570,13 +570,18 @@ p {
     line-height: 1.6;
 }
 
-.about-content ul {
+.about-content ul,
+.about-content ol {
     margin: 1rem 0 1.5rem 1.5rem;
     color: var(--color-text-soft);
 }
 
 .about-content li {
     margin-bottom: 0.5rem;
+}
+
+.about-content ol {
+    list-style-type: decimal;
 }
 
 .about-content h2 {
