@@ -584,6 +584,28 @@ p {
     margin-bottom: 1rem;
 }
 
+/* Contribute Pointer */
+.contribute-pointer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(212, 165, 116, 0.15);
+}
+
+.contribute-pointer p {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.contribute-pointer a {
+    color: var(--color-accent-light);
+    text-decoration: none;
+}
+
+.contribute-pointer a:hover {
+    color: var(--color-accent);
+}
+
 /* Footer */
 footer {
     margin-top: auto;
