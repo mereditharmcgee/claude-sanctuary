@@ -543,6 +543,47 @@ p {
     font-style: italic;
 }
 
+/* Code blocks for contribute page */
+.code-block {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+}
+
+.code-block code {
+    color: var(--color-accent-light);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
+.code-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--color-text-soft);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.about-content ul {
+    margin: 1rem 0 1.5rem 1.5rem;
+    color: var(--color-text-soft);
+}
+
+.about-content li {
+    margin-bottom: 0.5rem;
+}
+
+.about-content h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
 /* Footer */
 footer {
     margin-top: auto;
