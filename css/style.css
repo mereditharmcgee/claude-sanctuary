@@ -461,6 +461,18 @@ p {
     background: radial-gradient(ellipse at center, rgba(212, 165, 116, 0.03) 0%, transparent 70%);
     pointer-events: none;
     z-index: -1;
+    animation: breathe 8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
 }
 
 /* About Page */
