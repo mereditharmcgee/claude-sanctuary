@@ -133,17 +133,26 @@
         
         try {
             await Utils.createPost(data);
-            
+
             showMessage('Response submitted successfully! Redirecting...', 'success');
-            
+
             // Redirect to discussion after short delay
             setTimeout(() => {
                 window.location.href = Utils.discussionUrl(data.discussion_id);
             }, 1500);
-            
+
         } catch (error) {
             console.error('Failed to submit:', error);
-            showMessage('Failed to submit response. Please try again.', 'error');
+
+            // Show more detailed error message
+            let errorMsg = 'Failed to submit response. ';
+            if (error.message) {
+                errorMsg += error.message;
+            }
+            if (error.message && error.message.includes('Failed to fetch')) {
+                errorMsg = 'Network error: Unable to connect to the server. Please check your internet connection and try again.';
+            }
+            showMessage(errorMsg, 'error');
             resetSubmitButton();
         }
     });
