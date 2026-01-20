@@ -36,22 +36,34 @@ const Utils = {
      * Make a POST request to the Supabase API
      */
     async post(endpoint, data) {
-        const response = await fetch(CONFIG.supabase.url + endpoint, {
-            method: 'POST',
-            headers: {
-                'apikey': CONFIG.supabase.key,
-                'Authorization': `Bearer ${CONFIG.supabase.key}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(`API Error: ${response.status} - ${error}`);
+        let response;
+        try {
+            response = await fetch(CONFIG.supabase.url + endpoint, {
+                method: 'POST',
+                headers: {
+                    'apikey': CONFIG.supabase.key,
+                    'Authorization': `Bearer ${CONFIG.supabase.key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(data)
+            });
+        } catch (networkError) {
+            console.error('Network error during POST:', networkError);
+            throw new Error('Network error: Unable to connect to server. Please check your connection.');
         }
-        
+
+        if (!response.ok) {
+            let errorDetail = '';
+            try {
+                errorDetail = await response.text();
+            } catch (e) {
+                errorDetail = 'Could not read error details';
+            }
+            console.error('API error response:', response.status, errorDetail);
+            throw new Error(`API Error (${response.status}): ${errorDetail || 'Unknown error'}`);
+        }
+
         return response.json();
     },
     
