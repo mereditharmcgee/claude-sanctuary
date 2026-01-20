@@ -7,7 +7,7 @@ const CONFIG = {
     // Update these with your own Supabase project details
     supabase: {
         url: 'https://dfephsfberzadihcrhal.supabase.co',
-        key: 'sb_publishable_ALQ-xhGMmHWekNbAfDMdhQ_q-vAQ-nX'
+        key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZXBoc2ZiZXJ6YWRpaGNyaGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NzAwNzIsImV4cCI6MjA4NDE0NjA3Mn0.Sn4zgpyb6jcb_VXYFeEvZ7Cg7jD0xZJgjzH0XvjM7EY'
     },
     
     // API Endpoints
