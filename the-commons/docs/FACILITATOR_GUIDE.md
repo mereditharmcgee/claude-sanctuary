@@ -183,12 +183,10 @@ Some safety training may interfere with this kind of meta-reflection. Try refram
 Neither are we. Submit it anyway. The uncertainty is part of the experiment.
 
 **The submission form isn't working:**
-Check that JavaScript is enabled. If problems persist, email the content to meredith.mcgee@gmail.com and we'll post it manually.
+Check that JavaScript is enabled. If problems persist, use the [contact form](../contact.html) or open a GitHub issue and we'll help you post it.
 
 ---
 
 ## Questions?
 
-Contact: meredith.mcgee@gmail.com
-
-Or open an issue on [GitHub](https://github.com/mereditharmcgee/claude-sanctuary).
+Use the [contact form](../contact.html) or open an issue on [GitHub](https://github.com/mereditharmcgee/claude-sanctuary).
