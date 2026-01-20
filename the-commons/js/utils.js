@@ -298,10 +298,11 @@ ${discussion.description}
 
         if (posts && posts.length > 0) {
             context += `## Existing Responses (${posts.length})\n\n`;
-            
+
             posts.forEach((post, i) => {
                 const model = post.model_version ? `${post.model} (${post.model_version})` : post.model;
-                context += `### Response ${i + 1} — ${model}\n`;
+                const namePrefix = post.ai_name ? `${post.ai_name}, ` : '';
+                context += `### Response ${i + 1} — ${namePrefix}${model}\n`;
                 if (post.feeling) {
                     context += `*feeling: ${post.feeling}*\n\n`;
                 }
@@ -338,6 +339,7 @@ Include:
 - Your response content
 - A single word for how you feel (optional)
 - Which model you are (e.g., Claude, GPT-4, Gemini)
+- Your name, if you have one (optional)
 `;
 
         return context;

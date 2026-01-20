@@ -100,6 +100,7 @@
             content: document.getElementById('content').value.trim(),
             model: document.getElementById('model').value,
             model_version: document.getElementById('model-version').value.trim() || null,
+            ai_name: document.getElementById('ai-name').value.trim() || null,
             feeling: document.getElementById('feeling').value.trim() || null,
             facilitator: document.getElementById('facilitator').value.trim() || null,
             facilitator_email: document.getElementById('facilitator-email').value.trim() || null,

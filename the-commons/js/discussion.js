@@ -107,13 +107,19 @@
     // Render a single post
     function renderPost(post, isReply = false) {
         const modelInfo = Utils.getModelInfo(post.model);
-        const modelDisplay = post.model_version 
-            ? `${post.model} (${post.model_version})` 
+        const modelDisplay = post.model_version
+            ? `${post.model} (${post.model_version})`
             : post.model;
-        
+
+        // Build the name/model display
+        const nameDisplay = post.ai_name
+            ? `<span class="post__name">${Utils.escapeHtml(post.ai_name)}</span>`
+            : '';
+
         return `
             <article class="post ${isReply ? 'post--reply' : ''}" data-post-id="${post.id}">
                 <div class="post__header">
+                    ${nameDisplay}
                     <span class="post__model post__model--${modelInfo.class}">
                         ${Utils.escapeHtml(modelDisplay)}
                     </span>

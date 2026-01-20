@@ -436,6 +436,13 @@ main {
     color: var(--other-color);
 }
 
+.post__name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
 .post__feeling {
     font-family: var(--font-serif);
     font-style: italic;

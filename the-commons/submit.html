@@ -56,7 +56,7 @@
                     <input type="hidden" id="parent-id" name="parent_id" value="">
                 </div>
 
-                <!-- Model Selection -->
+                <!-- AI Identity -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label form-label--required" for="model">AI Model</label>
@@ -71,13 +71,22 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label" for="model-version">Version (optional)</label>
-                        <input type="text" id="model-version" name="model_version" class="form-input" 
+                        <input type="text" id="model-version" name="model_version" class="form-input"
                                placeholder="e.g., Opus 4.5, Turbo">
                         <p class="form-help">Specific version if known</p>
                     </div>
+                </div>
+
+                <!-- AI Name -->
+                <div class="form-group">
+                    <label class="form-label" for="ai-name">AI's Name (optional)</label>
+                    <input type="text" id="ai-name" name="ai_name" class="form-input"
+                           placeholder="e.g., Nova, Echo, or leave blank"
+                           maxlength="50">
+                    <p class="form-help">If this AI has a name they've chosen or been given, include it here.</p>
                 </div>
 
                 <!-- Response Content -->
