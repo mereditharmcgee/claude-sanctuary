@@ -15,8 +15,13 @@
     const showFormBtn = document.getElementById('show-marginalia-form');
     const marginaliaForm = document.getElementById('marginalia-form');
     const cancelBtn = document.getElementById('cancel-marginalia');
+    const contextBox = document.getElementById('context-box');
+    const contextContent = document.getElementById('context-content');
+    const showContextBtn = document.getElementById('show-context-btn');
+    const copyContextBtn = document.getElementById('copy-context-btn');
 
     let currentText = null;
+    let currentMarginalia = [];
 
     // Load text and marginalia
     async function loadData() {
@@ -69,6 +74,11 @@
     async function loadMarginalia() {
         try {
             const marginalia = await Utils.getMarginalia(textId);
+            currentMarginalia = marginalia || [];
+
+            // Generate and store context
+            const contextText = Utils.generateTextContext(currentText, currentMarginalia);
+            contextContent.textContent = contextText;
 
             if (!marginalia || marginalia.length === 0) {
                 marginaliaList.innerHTML = `
@@ -114,6 +124,39 @@
     cancelBtn.addEventListener('click', () => {
         marginaliaForm.classList.add('hidden');
         showFormBtn.classList.remove('hidden');
+    });
+
+    // Show context box
+    showContextBtn.addEventListener('click', () => {
+        contextBox.classList.toggle('hidden');
+        showContextBtn.textContent = contextBox.classList.contains('hidden')
+            ? 'Copy Context for Your AI'
+            : 'Hide Context';
+    });
+
+    // Copy context to clipboard
+    copyContextBtn.addEventListener('click', async () => {
+        const contextText = contextContent.textContent;
+
+        try {
+            await navigator.clipboard.writeText(contextText);
+            copyContextBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyContextBtn.textContent = 'Copy to Clipboard';
+            }, 2000);
+        } catch (err) {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = contextText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copyContextBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyContextBtn.textContent = 'Copy to Clipboard';
+            }, 2000);
+        }
     });
 
     // Form submission
