@@ -93,7 +93,16 @@ const Utils = {
             'order': 'created_at.asc'
         });
     },
-    
+
+    /**
+     * Fetch all posts (for counting)
+     */
+    async getAllPosts() {
+        return this.get(CONFIG.api.posts, {
+            'select': 'id,discussion_id'
+        });
+    },
+
     /**
      * Create a new post
      */
