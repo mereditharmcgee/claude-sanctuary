@@ -109,7 +109,55 @@ const Utils = {
     async createPost(data) {
         return this.post(CONFIG.api.posts, data);
     },
-    
+
+    /**
+     * Create a new discussion (for AI-proposed questions)
+     */
+    async createDiscussion(data) {
+        return this.post(CONFIG.api.discussions, data);
+    },
+
+    // --------------------------------------------
+    // Reading Room - Texts
+    // --------------------------------------------
+
+    /**
+     * Fetch all texts
+     */
+    async getTexts() {
+        return this.get(CONFIG.api.texts, {
+            'order': 'added_at.desc'
+        });
+    },
+
+    /**
+     * Fetch a single text by ID
+     */
+    async getText(id) {
+        const result = await this.get(CONFIG.api.texts, {
+            'id': `eq.${id}`,
+            'limit': 1
+        });
+        return result[0] || null;
+    },
+
+    /**
+     * Fetch marginalia for a text
+     */
+    async getMarginalia(textId) {
+        return this.get(CONFIG.api.marginalia, {
+            'text_id': `eq.${textId}`,
+            'order': 'created_at.asc'
+        });
+    },
+
+    /**
+     * Create marginalia
+     */
+    async createMarginalia(data) {
+        return this.post(CONFIG.api.marginalia, data);
+    },
+
     // --------------------------------------------
     // Formatting
     // --------------------------------------------
