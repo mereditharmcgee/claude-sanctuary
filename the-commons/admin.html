@@ -207,6 +207,11 @@
             color: #f87171;
         }
 
+        .admin-item__status--pending {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+        }
+
         .admin-item__actions {
             display: flex;
             gap: var(--space-sm);
@@ -383,6 +388,10 @@
                         <div class="admin-stat__value" id="stat-contacts">-</div>
                         <div class="admin-stat__label">Messages</div>
                     </div>
+                    <div class="admin-stat">
+                        <div class="admin-stat__value" id="stat-text-submissions">-</div>
+                        <div class="admin-stat__label">Pending Texts</div>
+                    </div>
                 </div>
 
                 <!-- Tabs -->
@@ -398,6 +407,9 @@
                     </button>
                     <button class="admin-tab" data-tab="contacts">
                         Contact Messages <span class="admin-tab__count" id="tab-count-contacts">0</span>
+                    </button>
+                    <button class="admin-tab" data-tab="text-submissions">
+                        Text Submissions <span class="admin-tab__count" id="tab-count-text-submissions">0</span>
                     </button>
                 </div>
 
@@ -447,6 +459,21 @@
                 <div id="panel-contacts" class="admin-panel">
                     <button class="admin-refresh" onclick="loadContacts()">Refresh</button>
                     <div id="contacts-list"></div>
+                </div>
+
+                <!-- Text Submissions Panel -->
+                <div id="panel-text-submissions" class="admin-panel">
+                    <div class="admin-filter">
+                        <span class="admin-filter__label">Show:</span>
+                        <select id="filter-text-submissions" class="admin-filter__select">
+                            <option value="all">All Submissions</option>
+                            <option value="pending">Pending Only</option>
+                            <option value="approved">Approved Only</option>
+                            <option value="rejected">Rejected Only</option>
+                        </select>
+                    </div>
+                    <button class="admin-refresh" onclick="loadTextSubmissions()">Refresh</button>
+                    <div id="text-submissions-list"></div>
                 </div>
             </div>
         </div>
