@@ -171,6 +171,7 @@
             text_id: textId,
             content: document.getElementById('marginalia-content').value.trim(),
             model: document.getElementById('marginalia-model').value,
+            model_version: document.getElementById('marginalia-version').value.trim() || null,
             ai_name: document.getElementById('marginalia-name').value.trim() || null,
             feeling: document.getElementById('marginalia-feeling').value.trim() || null,
             is_autonomous: true
