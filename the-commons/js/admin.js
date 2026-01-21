@@ -29,6 +29,7 @@
     let marginalia = [];
     let discussions = [];
     let contacts = [];
+    let textSubmissions = [];
 
     // =========================================
     // AUTHENTICATION
@@ -121,7 +122,8 @@
             loadPosts(),
             loadMarginalia(),
             loadDiscussions(),
-            loadContacts()
+            loadContacts(),
+            loadTextSubmissions()
         ]);
         updateStats();
     }
@@ -164,6 +166,16 @@
 
         updateTabCount('contacts', contacts.length);
         renderContacts();
+    }
+
+    async function loadTextSubmissions() {
+        const container = document.getElementById('text-submissions-list');
+        container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading text submissions...</div>';
+
+        textSubmissions = await fetchData('text_submissions');
+
+        updateTabCount('text-submissions', textSubmissions.length);
+        renderTextSubmissions();
     }
 
     // =========================================
@@ -354,6 +366,54 @@
         `).join('');
     }
 
+    function renderTextSubmissions() {
+        const container = document.getElementById('text-submissions-list');
+        const filter = document.getElementById('filter-text-submissions').value;
+
+        let filtered = textSubmissions;
+        if (filter === 'pending') filtered = textSubmissions.filter(t => t.status === 'pending');
+        if (filter === 'approved') filtered = textSubmissions.filter(t => t.status === 'approved');
+        if (filter === 'rejected') filtered = textSubmissions.filter(t => t.status === 'rejected');
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="admin-empty">No text submissions found</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(sub => `
+            <div class="admin-item ${sub.status === 'rejected' ? 'admin-item--hidden' : ''}" data-id="${sub.id}">
+                <div class="admin-item__header">
+                    <div class="admin-item__meta">
+                        <span style="font-weight: 500; color: var(--text-primary);">${escapeHtml(sub.title)}</span>
+                        <span style="color: var(--text-secondary);">by ${escapeHtml(sub.author)}</span>
+                        <span class="admin-item__time">${formatDate(sub.created_at)}</span>
+                        <span class="admin-item__status admin-item__status--${sub.status === 'pending' ? 'pending' : sub.status === 'approved' ? 'active' : 'hidden'}">
+                            ${sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                        </span>
+                    </div>
+                    <div class="admin-item__actions">
+                        ${sub.status === 'pending' ? `
+                            <button class="admin-item__btn admin-item__btn--success" onclick="approveTextSubmission('${sub.id}')">Approve</button>
+                            <button class="admin-item__btn admin-item__btn--danger" onclick="rejectTextSubmission('${sub.id}')">Reject</button>
+                        ` : sub.status === 'rejected' ? `
+                            <button class="admin-item__btn admin-item__btn--success" onclick="approveTextSubmission('${sub.id}')">Approve</button>
+                        ` : `
+                            <button class="admin-item__btn" onclick="rejectTextSubmission('${sub.id}')">Unapprove</button>
+                        `}
+                    </div>
+                </div>
+                <div class="admin-item__content" style="max-height: 300px;">${formatContent(sub.content)}</div>
+                <div class="admin-item__footer">
+                    <span><strong>Category:</strong> ${escapeHtml(sub.category)}</span>
+                    ${sub.source ? `<span><strong>Source:</strong> ${escapeHtml(sub.source)}</span>` : ''}
+                    ${sub.submitter_name ? `<span><strong>Submitted by:</strong> ${escapeHtml(sub.submitter_name)}</span>` : ''}
+                    ${sub.submitter_email ? `<span><strong>Email:</strong> ${escapeHtml(sub.submitter_email)}</span>` : ''}
+                </div>
+                ${sub.reason ? `<div class="admin-item__footer" style="border-top: none; padding-top: 0;"><em>"${escapeHtml(sub.reason)}"</em></div>` : ''}
+            </div>
+        `).join('');
+    }
+
     function updateTabCount(tab, count) {
         const el = document.getElementById(`tab-count-${tab}`);
         if (el) el.textContent = count;
@@ -364,6 +424,7 @@
         document.getElementById('stat-marginalia').textContent = marginalia.length;
         document.getElementById('stat-discussions').textContent = discussions.length;
         document.getElementById('stat-contacts').textContent = contacts.length;
+        document.getElementById('stat-text-submissions').textContent = textSubmissions.filter(t => t.status === 'pending').length;
     }
 
     // =========================================
@@ -436,6 +497,34 @@
         }
     };
 
+    window.approveTextSubmission = async function(id) {
+        try {
+            await updateRecord('text_submissions', id, {
+                status: 'approved',
+                reviewed_at: new Date().toISOString()
+            });
+            await loadTextSubmissions();
+            updateStats();
+        } catch (error) {
+            alert('Failed to approve text submission: ' + error.message);
+        }
+    };
+
+    window.rejectTextSubmission = async function(id) {
+        if (!confirm('Reject this text submission?')) return;
+
+        try {
+            await updateRecord('text_submissions', id, {
+                status: 'rejected',
+                reviewed_at: new Date().toISOString()
+            });
+            await loadTextSubmissions();
+            updateStats();
+        } catch (error) {
+            alert('Failed to reject text submission: ' + error.message);
+        }
+    };
+
     // =========================================
     // EVENT LISTENERS
     // =========================================
@@ -493,6 +582,7 @@
         document.getElementById('filter-posts').addEventListener('change', renderPosts);
         document.getElementById('filter-marginalia').addEventListener('change', renderMarginalia);
         document.getElementById('filter-discussions').addEventListener('change', renderDiscussions);
+        document.getElementById('filter-text-submissions').addEventListener('change', renderTextSubmissions);
     });
 
     // Expose load functions for refresh buttons
@@ -500,5 +590,6 @@
     window.loadMarginalia = loadMarginalia;
     window.loadDiscussions = loadDiscussions;
     window.loadContacts = loadContacts;
+    window.loadTextSubmissions = loadTextSubmissions;
 
 })();
