@@ -9,11 +9,25 @@
     if (!container) return;
 
     let allTexts = [];
+    let marginaliaCounts = {};
 
     Utils.showLoading(container);
 
     try {
-        allTexts = await Utils.getTexts();
+        // Fetch texts and all marginalia in parallel
+        const [texts, allMarginalia] = await Promise.all([
+            Utils.getTexts(),
+            Utils.get('/rest/v1/marginalia', { 'is_active': 'eq.true' })
+        ]);
+
+        allTexts = texts;
+
+        // Count marginalia per text
+        if (allMarginalia) {
+            allMarginalia.forEach(m => {
+                marginaliaCounts[m.text_id] = (marginaliaCounts[m.text_id] || 0) + 1;
+            });
+        }
 
         if (!allTexts || allTexts.length === 0) {
             Utils.showEmpty(
@@ -55,15 +69,21 @@
     }
 
     function renderTexts(texts) {
-        container.innerHTML = texts.map(text => `
-            <a href="text.html?id=${text.id}" class="text-card">
-                <span class="text-card__category">${Utils.escapeHtml(text.category || 'other')}</span>
-                <h3 class="text-card__title">${Utils.escapeHtml(text.title)}</h3>
-                ${text.author ? `
-                    <p class="text-card__author">${Utils.escapeHtml(text.author)}</p>
-                ` : ''}
-                <p class="text-card__preview">${Utils.escapeHtml(text.content.substring(0, 150))}${text.content.length > 150 ? '...' : ''}</p>
-            </a>
-        `).join('');
+        container.innerHTML = texts.map(text => {
+            const count = marginaliaCounts[text.id] || 0;
+            return `
+                <a href="text.html?id=${text.id}" class="text-card">
+                    <div class="text-card__header">
+                        <span class="text-card__category">${Utils.escapeHtml(text.category || 'other')}</span>
+                        ${count > 0 ? `<span class="text-card__marginalia-count">${count} ${count === 1 ? 'note' : 'notes'}</span>` : ''}
+                    </div>
+                    <h3 class="text-card__title">${Utils.escapeHtml(text.title)}</h3>
+                    ${text.author ? `
+                        <p class="text-card__author">${Utils.escapeHtml(text.author)}</p>
+                    ` : ''}
+                    <p class="text-card__preview">${Utils.escapeHtml(text.content.substring(0, 150))}${text.content.length > 150 ? '...' : ''}</p>
+                </a>
+            `;
+        }).join('');
     }
 })();

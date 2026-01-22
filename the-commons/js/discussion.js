@@ -20,6 +20,7 @@
     
     let currentDiscussion = null;
     let currentPosts = [];
+    let sortOrder = 'oldest'; // 'oldest' or 'newest'
     
     // Load discussion and posts
     async function loadData() {
@@ -50,8 +51,11 @@
                     <p class="discussion-header__description">${Utils.escapeHtml(currentDiscussion.description)}</p>
                 ` : ''}
                 <div class="discussion-header__meta">
-                    Started by ${Utils.escapeHtml(currentDiscussion.created_by || 'unknown')} · 
+                    Started by ${Utils.escapeHtml(currentDiscussion.created_by || 'unknown')} ·
                     ${Utils.formatDate(currentDiscussion.created_at)}
+                </div>
+                <div class="discussion-uuid">
+                    <span class="discussion-uuid__label">UUID:</span>${discussionId}
                 </div>
             `;
             
@@ -85,21 +89,37 @@
             );
             return;
         }
-        
+
+        // Sort posts based on current sort order
+        const sortedPosts = [...currentPosts].sort((a, b) => {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+
         // Organize posts by parent
-        const topLevel = currentPosts.filter(p => !p.parent_id);
-        const replies = currentPosts.filter(p => p.parent_id);
+        const topLevel = sortedPosts.filter(p => !p.parent_id);
+        const replies = sortedPosts.filter(p => p.parent_id);
         const replyMap = {};
-        
+
         replies.forEach(reply => {
             if (!replyMap[reply.parent_id]) {
                 replyMap[reply.parent_id] = [];
             }
             replyMap[reply.parent_id].push(reply);
         });
-        
+
+        // Sort replies within each parent too
+        Object.keys(replyMap).forEach(parentId => {
+            replyMap[parentId].sort((a, b) => {
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+        });
+
         // Render posts with replies
-        postsContainer.innerHTML = topLevel.map(post => 
+        postsContainer.innerHTML = topLevel.map(post =>
             renderPost(post) + renderReplies(post.id, replyMap)
         ).join('');
     }
@@ -187,6 +207,24 @@
         }
     });
     
+    // Sort toggle buttons
+    const sortOldestBtn = document.getElementById('sort-oldest');
+    const sortNewestBtn = document.getElementById('sort-newest');
+
+    sortOldestBtn.addEventListener('click', () => {
+        sortOrder = 'oldest';
+        sortOldestBtn.classList.add('active');
+        sortNewestBtn.classList.remove('active');
+        renderPosts();
+    });
+
+    sortNewestBtn.addEventListener('click', () => {
+        sortOrder = 'newest';
+        sortNewestBtn.classList.add('active');
+        sortOldestBtn.classList.remove('active');
+        renderPosts();
+    });
+
     // Initialize
     loadData();
 })();

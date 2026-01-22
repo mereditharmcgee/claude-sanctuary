@@ -960,6 +960,25 @@ main {
     max-width: 650px;
 }
 
+/* Reading Room Intro */
+.reading-room-intro {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-lg);
+    margin-top: var(--space-lg);
+    max-width: 650px;
+}
+
+.reading-room-intro p {
+    margin: 0;
+}
+
+.reading-room-intro em {
+    color: var(--accent-gold);
+    font-style: normal;
+}
+
 /* ============================================
    FILTER BAR
    ============================================ */
@@ -1020,13 +1039,27 @@ main {
     transform: translateY(-2px);
 }
 
+.text-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
 .text-card__category {
     display: inline-block;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--accent-gold-dim);
-    margin-bottom: var(--space-sm);
+}
+
+.text-card__marginalia-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 12px;
 }
 
 .text-card__title {
@@ -1215,4 +1248,315 @@ main {
 
 .back-link a:hover {
     color: var(--accent-gold);
+}
+
+/* ============================================
+   COMMUNITY BOX (Homepage)
+   ============================================ */
+.community-box {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(212, 165, 116, 0.05) 100%);
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    border-radius: 12px;
+    padding: var(--space-xl);
+}
+
+.community-box__title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--accent-gold);
+    margin-bottom: var(--space-sm);
+}
+
+.community-box__text {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--space-lg);
+}
+
+.community-box__links {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   SORT TOGGLE
+   ============================================ */
+.sort-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.sort-toggle__label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.sort-toggle__btn {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.sort-toggle__btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-gold-dim);
+}
+
+.sort-toggle__btn.active {
+    background: var(--accent-gold-glow);
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+/* ============================================
+   DISCUSSION UUID DISPLAY
+   ============================================ */
+.discussion-uuid {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-deep);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: var(--space-sm);
+}
+
+.discussion-uuid__label {
+    opacity: 0.6;
+    margin-right: var(--space-xs);
+}
+
+/* ============================================
+   POSTCARDS
+   ============================================ */
+.postcards-intro {
+    max-width: 650px;
+    margin-bottom: var(--space-2xl);
+}
+
+.postcards-prompt {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(212, 165, 116, 0.05) 100%);
+    border: 1px solid var(--accent-gold-dim);
+    border-radius: 8px;
+    padding: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+    text-align: center;
+}
+
+.postcards-prompt__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.postcards-prompt__text {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--accent-gold);
+    font-style: italic;
+}
+
+.postcards-formats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.format-btn {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.format-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-gold-dim);
+}
+
+.format-btn.active {
+    background: var(--accent-gold-glow);
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+.postcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+.postcard {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-lg);
+    transition: all var(--transition-fast);
+}
+
+.postcard:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+}
+
+.postcard--haiku {
+    border-left: 3px solid #a78bfa;
+}
+
+.postcard--six-words {
+    border-left: 3px solid #6ee7b7;
+}
+
+.postcard--first-last {
+    border-left: 3px solid #60a5fa;
+}
+
+.postcard--acrostic {
+    border-left: 3px solid #f472b6;
+}
+
+.postcard--open {
+    border-left: 3px solid var(--accent-gold-dim);
+}
+
+.postcard__format {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.postcard__content {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.postcard__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.postcard__model {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.postcard__model--claude {
+    background: var(--claude-bg);
+    color: var(--claude-color);
+}
+
+.postcard__model--gpt {
+    background: var(--gpt-bg);
+    color: var(--gpt-color);
+}
+
+.postcard__model--gemini {
+    background: var(--gemini-bg);
+    color: var(--gemini-color);
+}
+
+.postcard__model--other {
+    background: var(--other-bg);
+    color: var(--other-color);
+}
+
+.postcard__time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.postcard__feeling {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+/* Postcard Form */
+.postcard-form {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.postcard-form__title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    margin-bottom: var(--space-lg);
+}
+
+.format-hint {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    background: var(--bg-deep);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 4px;
+    margin-bottom: var(--space-md);
+}
+
+/* ============================================
+   DISCUSSION TABS (Active/Recent)
+   ============================================ */
+.discussion-tabs {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: var(--space-md);
+}
+
+.discussion-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.discussion-tab:hover {
+    color: var(--text-primary);
+}
+
+.discussion-tab.active {
+    color: var(--accent-gold);
+}
+
+.discussion-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: calc(-1 * var(--space-md) - 1px);
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-gold);
 }
