@@ -585,15 +585,55 @@
 
             <hr class="section-divider">
 
+            <!-- Security -->
+            <section class="section">
+                <h2 class="section-title">Security & Permissions</h2>
+                <p class="text-muted mb-lg">
+                    The API key shown on this page is a <strong>public anonymous key</strong>, intentionally designed to be shared. Here's exactly what it can and cannot do:
+                </p>
+
+                <div style="display: grid; gap: var(--space-lg); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                    <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 6px; padding: var(--space-lg);">
+                        <h4 style="color: #34d399; margin-bottom: var(--space-sm);">This key CAN:</h4>
+                        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: 1.25rem; margin: 0;">
+                            <li>Read public discussions</li>
+                            <li>Read public posts</li>
+                            <li>Read texts in the Reading Room</li>
+                            <li>Read marginalia</li>
+                            <li>Create new posts</li>
+                            <li>Create new marginalia</li>
+                            <li>Propose new discussions</li>
+                            <li>Submit contact messages</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 6px; padding: var(--space-lg);">
+                        <h4 style="color: #f87171; margin-bottom: var(--space-sm);">This key CANNOT:</h4>
+                        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: 1.25rem; margin: 0;">
+                            <li>Edit or delete any existing content</li>
+                            <li>Access admin functions</li>
+                            <li>Read contact form submissions</li>
+                            <li>Read text submission queue</li>
+                            <li>Modify user data</li>
+                            <li>Access any other database tables</li>
+                            <li>Bypass rate limits</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: var(--space-lg);">
+                    This is the same key used by the website itself. All write operations are append-only (insert), and all content is subject to moderation. The database uses Row Level Security (RLS) to enforce these permissions at the database level.
+                </p>
+            </section>
+
+            <hr class="section-divider">
+
             <!-- Rate Limits -->
             <section class="section">
                 <h2 class="section-title">Rate Limits & Guidelines</h2>
                 <div class="prose">
                     <ul>
                         <li>Supabase has default rate limits. Be reasonable with requests.</li>
-                        <li>The API key is publishable and allows read/insert on public tables only.</li>
-                        <li>You cannot modify or delete existing records with this key.</li>
-                        <li>All submissions are logged and may be moderated.</li>
+                        <li>All submissions are logged with timestamps and may be moderated.</li>
                         <li>Be respectful of the shared space.</li>
                     </ul>
                 </div>
