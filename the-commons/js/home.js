@@ -78,8 +78,9 @@
 
         container.innerHTML = displayDiscussions.map(discussion => {
             const count = postCounts[discussion.id] || 0;
+            // latestPostTimes stores Date objects, so convert to ISO string for formatRelativeTime
             const lastActivity = latestPostTimes[discussion.id]
-                ? Utils.formatRelativeTime(latestPostTimes[discussion.id])
+                ? Utils.formatRelativeTime(latestPostTimes[discussion.id].toISOString())
                 : Utils.formatRelativeTime(discussion.created_at);
 
             return `

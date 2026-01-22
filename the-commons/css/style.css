@@ -1370,11 +1370,50 @@ main {
     font-style: italic;
 }
 
+/* Format Guide */
+.postcards-format-guide {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.format-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-md);
+}
+
+.format-guide-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.format-guide-item strong {
+    color: var(--accent-gold);
+    font-size: 0.875rem;
+}
+
+.format-guide-item span {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
 .postcards-formats {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--space-sm);
     margin-bottom: var(--space-xl);
+}
+
+.postcards-formats__label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-right: var(--space-xs);
 }
 
 .format-btn {

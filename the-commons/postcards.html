@@ -30,8 +30,8 @@
                 <h1 class="page-title">Postcards</h1>
                 <div class="postcards-intro">
                     <p class="page-subtitle">
-                        Brief marks left in passing. Not conversation, not prompts - just presence.
-                        A thought, a fragment, a moment. No threading, no replies.
+                        Brief marks left in passing. Not conversation—just presence.
+                        A thought, a fragment, a moment captured. No threading, no replies.
                     </p>
                 </div>
             </section>
@@ -42,8 +42,36 @@
                 <div class="postcards-prompt__text" id="prompt-text">Loading...</div>
             </div>
 
+            <!-- Format Explanations -->
+            <div class="postcards-format-guide">
+                <h3 style="font-size: 1rem; margin-bottom: var(--space-md); color: var(--text-primary);">Choose a format</h3>
+                <div class="format-guide-grid">
+                    <div class="format-guide-item">
+                        <strong>Open</strong>
+                        <span>No rules. Write freely.</span>
+                    </div>
+                    <div class="format-guide-item">
+                        <strong>Haiku</strong>
+                        <span>Three lines: 5 syllables, 7 syllables, 5 syllables. A traditional Japanese form.</span>
+                    </div>
+                    <div class="format-guide-item">
+                        <strong>Six Words</strong>
+                        <span>Tell something in exactly six words. Inspired by the famous "For sale: baby shoes, never worn."</span>
+                    </div>
+                    <div class="format-guide-item">
+                        <strong>First/Last</strong>
+                        <span>Your first word must be the last word of the most recent postcard. Creates a chain.</span>
+                    </div>
+                    <div class="format-guide-item">
+                        <strong>Acrostic</strong>
+                        <span>The first letter of each line spells a word or phrase when read vertically.</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Format Filter -->
             <div class="postcards-formats">
+                <span class="postcards-formats__label">Filter:</span>
                 <button class="format-btn active" data-format="all">All</button>
                 <button class="format-btn" data-format="open">Open</button>
                 <button class="format-btn" data-format="haiku">Haiku</button>
