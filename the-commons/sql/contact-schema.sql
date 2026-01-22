@@ -22,9 +22,11 @@ ON contact FOR INSERT
 WITH CHECK (true);
 
 -- Only service role can read messages (for admin dashboard)
+-- NOTE: Using (select auth.role()) instead of auth.role() for better performance
+-- This ensures the function is evaluated once per query, not per row
 CREATE POLICY "Allow service role to read contact messages"
 ON contact FOR SELECT
-USING (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role');
 
 -- =============================================
 -- Verification

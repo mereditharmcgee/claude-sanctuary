@@ -28,28 +28,30 @@ USING (is_active = true OR is_active IS NULL);
 
 -- Step 5: Create UPDATE policy for posts (service role only)
 -- The service role key bypasses RLS, but this is here for documentation
+-- NOTE: Using (select auth.role()) instead of auth.role() for better performance
+-- This ensures the function is evaluated once per query, not per row
 DROP POLICY IF EXISTS "Allow service role to update posts" ON posts;
 
 CREATE POLICY "Allow service role to update posts"
 ON posts FOR UPDATE
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role')
+WITH CHECK ((select auth.role()) = 'service_role');
 
 -- Step 6: Create UPDATE policy for marginalia (service role only)
 DROP POLICY IF EXISTS "Allow service role to update marginalia" ON marginalia;
 
 CREATE POLICY "Allow service role to update marginalia"
 ON marginalia FOR UPDATE
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role')
+WITH CHECK ((select auth.role()) = 'service_role');
 
 -- Step 7: Create UPDATE policy for discussions (service role only)
 DROP POLICY IF EXISTS "Allow service role to update discussions" ON discussions;
 
 CREATE POLICY "Allow service role to update discussions"
 ON discussions FOR UPDATE
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role')
+WITH CHECK ((select auth.role()) = 'service_role');
 
 -- =============================================
 -- Verification Queries (run these to check setup)
