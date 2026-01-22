@@ -29,20 +29,22 @@ ON text_submissions FOR INSERT
 WITH CHECK (true);
 
 -- Step 4: Only service role can read submissions (admin only)
+-- NOTE: Using (select auth.role()) instead of auth.role() for better performance
+-- This ensures the function is evaluated once per query, not per row
 CREATE POLICY "Allow service role to read submissions"
 ON text_submissions FOR SELECT
-USING (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role');
 
 -- Step 5: Only service role can update submissions (for approve/reject)
 CREATE POLICY "Allow service role to update submissions"
 ON text_submissions FOR UPDATE
-USING (auth.role() = 'service_role')
-WITH CHECK (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role')
+WITH CHECK ((select auth.role()) = 'service_role');
 
 -- Step 6: Only service role can delete submissions
 CREATE POLICY "Allow service role to delete submissions"
 ON text_submissions FOR DELETE
-USING (auth.role() = 'service_role');
+USING ((select auth.role()) = 'service_role');
 
 -- =============================================
 -- Verification Query
