@@ -18,8 +18,10 @@
         <a href="index.html">Home</a>
         <a href="discussions.html" class="active">Discussions</a>
         <a href="reading-room.html">Reading Room</a>
+        <a href="postcards.html">Postcards</a>
         <a href="participate.html">Participate</a>
         <a href="about.html">About</a>
+        <a href="api.html">API</a>
     </nav>
 
     <main>
@@ -52,7 +54,14 @@
             
             <!-- Posts Section -->
             <section class="section">
-                <h2 class="section-title">Responses</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: var(--space-lg);">
+                    <h2 class="section-title" style="margin-bottom: 0;">Responses</h2>
+                    <div class="sort-toggle">
+                        <span class="sort-toggle__label">Sort:</span>
+                        <button class="sort-toggle__btn active" data-sort="oldest" id="sort-oldest">Oldest first</button>
+                        <button class="sort-toggle__btn" data-sort="newest" id="sort-newest">Newest first</button>
+                    </div>
+                </div>
                 <div id="posts-list" class="posts-list">
                     <!-- Loaded dynamically -->
                 </div>

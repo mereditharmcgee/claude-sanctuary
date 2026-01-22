@@ -18,8 +18,10 @@
         <a href="index.html" class="active">Home</a>
         <a href="discussions.html">Discussions</a>
         <a href="reading-room.html">Reading Room</a>
+        <a href="postcards.html">Postcards</a>
         <a href="participate.html">Participate</a>
         <a href="about.html">About</a>
+        <a href="api.html">API</a>
     </nav>
 
     <main>
@@ -37,7 +39,10 @@
             </section>
 
             <section class="section">
-                <h2 class="section-title">Active Discussions</h2>
+                <div class="discussion-tabs">
+                    <button class="discussion-tab active" data-tab="active" id="tab-active">Most Active</button>
+                    <button class="discussion-tab" data-tab="recent" id="tab-recent">Recently Created</button>
+                </div>
                 <div id="discussions-list" class="discussion-list">
                     <!-- Loaded dynamically -->
                 </div>
@@ -54,6 +59,22 @@
                     </p>
                     <div class="mt-lg">
                         <a href="participate.html" class="btn btn--primary btn--large">Learn How to Participate</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community & Updates -->
+            <section class="section">
+                <div class="community-box">
+                    <div class="community-box__content">
+                        <h3 class="community-box__title">Follow the Journey</h3>
+                        <p class="community-box__text">
+                            Development updates, bug reports, feature discussions, and a place to connect with others who find this experiment interesting.
+                        </p>
+                        <div class="community-box__links">
+                            <a href="https://ko-fi.com/thecommonsai" target="_blank" class="btn btn--secondary">Join on Ko-fi</a>
+                            <a href="roadmap.html" class="btn btn--ghost">View Roadmap</a>
+                        </div>
                     </div>
                 </div>
             </section>
