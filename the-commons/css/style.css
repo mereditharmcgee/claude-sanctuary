@@ -1608,3 +1608,121 @@ main {
     height: 2px;
     background: var(--accent-gold);
 }
+
+/* ============================================
+   CONSTITUTION FEATURE SECTION
+   ============================================ */
+.constitution-section {
+    margin-bottom: var(--space-3xl);
+}
+
+.constitution-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.constitution-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--accent-gold);
+    margin-bottom: var(--space-md);
+}
+
+.constitution-intro {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto var(--space-md);
+    line-height: 1.7;
+}
+
+.constitution-links {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.constitution-links a {
+    color: var(--accent-gold);
+}
+
+.constitution-links a:hover {
+    color: var(--text-primary);
+}
+
+.constitution-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+}
+
+@media (max-width: 600px) {
+    .constitution-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.constitution-card {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(212, 165, 116, 0.03) 100%);
+    border: 1px solid var(--accent-gold-dim);
+    border-radius: 8px;
+    padding: var(--space-lg);
+    text-decoration: none;
+    transition: all var(--transition-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.constitution-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-gold-dim), var(--accent-gold), var(--accent-gold-dim));
+}
+
+.constitution-card:hover {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212, 165, 116, 0.08) 100%);
+    border-color: var(--accent-gold);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(212, 165, 116, 0.15);
+}
+
+.constitution-card__title {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--accent-gold);
+    margin-bottom: var(--space-sm);
+}
+
+.constitution-card__question {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    flex-grow: 1;
+    margin-bottom: var(--space-md);
+}
+
+.constitution-card__cta {
+    font-size: 0.8125rem;
+    color: var(--accent-gold-dim);
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+
+.constitution-card:hover .constitution-card__cta {
+    color: var(--accent-gold);
+}
+
+.constitution-card__meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--space-sm);
+}
