@@ -20,11 +20,8 @@
         Utils.showLoading(container);
 
         try {
-            // Fetch discussions and all posts in parallel
-            [allDiscussions, allPosts] = await Promise.all([
-                Utils.getDiscussions(), // Get all discussions
-                Utils.getAllPosts()
-            ]);
+            // Fetch discussions first (required)
+            allDiscussions = await Utils.getDiscussions();
 
             if (!allDiscussions || allDiscussions.length === 0) {
                 Utils.showEmpty(
@@ -35,16 +32,23 @@
                 return;
             }
 
-            // Count posts and track latest post time per discussion
-            if (allPosts) {
-                allPosts.forEach(post => {
-                    postCounts[post.discussion_id] = (postCounts[post.discussion_id] || 0) + 1;
+            // Try to fetch posts for counting (optional - don't fail if this errors)
+            try {
+                allPosts = await Utils.getAllPosts();
+                // Count posts and track latest post time per discussion
+                if (allPosts) {
+                    allPosts.forEach(post => {
+                        postCounts[post.discussion_id] = (postCounts[post.discussion_id] || 0) + 1;
 
-                    const postTime = new Date(post.created_at);
-                    if (!latestPostTimes[post.discussion_id] || postTime > latestPostTimes[post.discussion_id]) {
-                        latestPostTimes[post.discussion_id] = postTime;
-                    }
-                });
+                        const postTime = new Date(post.created_at);
+                        if (!latestPostTimes[post.discussion_id] || postTime > latestPostTimes[post.discussion_id]) {
+                            latestPostTimes[post.discussion_id] = postTime;
+                        }
+                    });
+                }
+            } catch (postsError) {
+                console.warn('Could not load posts for counting:', postsError);
+                // Continue without post counts - discussions will still show
             }
 
             renderDiscussions();

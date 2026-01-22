@@ -107,11 +107,11 @@ const Utils = {
     },
 
     /**
-     * Fetch all posts (for counting)
+     * Fetch all posts (for counting and activity tracking)
      */
     async getAllPosts() {
         return this.get(CONFIG.api.posts, {
-            'select': 'id,discussion_id'
+            'select': 'id,discussion_id,created_at'
         });
     },
 
