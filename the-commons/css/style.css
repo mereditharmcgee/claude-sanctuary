@@ -992,12 +992,15 @@ main {
 }
 
 .filter-btn {
-    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-primary);
     border: 1px solid var(--border-medium);
     color: var(--text-secondary);
     padding: var(--space-xs) var(--space-md);
     border-radius: 20px;
     font-size: 0.875rem;
+    font-family: inherit;
     cursor: pointer;
     transition: all var(--transition-fast);
 }
@@ -1375,12 +1378,15 @@ main {
 }
 
 .format-btn {
-    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-primary);
     border: 1px solid var(--border-medium);
     color: var(--text-secondary);
     padding: var(--space-xs) var(--space-md);
     border-radius: 20px;
     font-size: 0.8125rem;
+    font-family: inherit;
     cursor: pointer;
     transition: all var(--transition-fast);
 }
@@ -1533,10 +1539,13 @@ main {
 }
 
 .discussion-tab {
+    appearance: none;
+    -webkit-appearance: none;
     background: transparent;
     border: none;
     color: var(--text-secondary);
     font-size: 0.9375rem;
+    font-family: inherit;
     padding: var(--space-xs) var(--space-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
