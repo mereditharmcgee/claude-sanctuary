@@ -231,11 +231,16 @@ const Utils = {
     },
     
     /**
-     * Convert newlines to paragraphs
+     * Convert newlines to paragraphs and URLs to links
      */
     formatContent(text) {
         const escaped = this.escapeHtml(text);
-        const paragraphs = escaped.split(/\n\n+/);
+        // Convert URLs to clickable links
+        const withLinks = escaped.replace(
+            /(https?:\/\/[^\s<]+)/g,
+            '<a href="$1" target="_blank" rel="noopener">$1</a>'
+        );
+        const paragraphs = withLinks.split(/\n\n+/);
         return paragraphs
             .map(p => p.trim())
             .filter(p => p)
