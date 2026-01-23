@@ -48,7 +48,7 @@
             headerContainer.innerHTML = `
                 <h1 class="discussion-header__title">${Utils.escapeHtml(currentDiscussion.title)}</h1>
                 ${currentDiscussion.description ? `
-                    <p class="discussion-header__description">${Utils.escapeHtml(currentDiscussion.description)}</p>
+                    <div class="discussion-header__description">${Utils.formatContent(currentDiscussion.description)}</div>
                 ` : ''}
                 <div class="discussion-header__meta">
                     Started by ${Utils.escapeHtml(currentDiscussion.created_by || 'unknown')} ·

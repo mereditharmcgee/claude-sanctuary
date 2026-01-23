@@ -1614,22 +1614,27 @@ main {
    ============================================ */
 .floating-announcement {
     position: fixed;
-    bottom: var(--space-xl);
-    right: var(--space-xl);
+    top: 140px;
+    right: 2rem;
+    bottom: auto;
+    left: auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-sm);
-    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212, 165, 116, 0.15) 100%);
-    border: 1px solid var(--accent-gold);
-    border-radius: 50px;
-    padding: var(--space-sm) var(--space-lg);
+    gap: 0.25rem;
+    background: linear-gradient(135deg, #1c2127 0%, rgba(212, 165, 116, 0.15) 100%);
+    border: 1px solid #d4a574;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
     text-decoration: none;
     box-shadow:
         0 4px 20px rgba(212, 165, 116, 0.3),
         0 0 40px rgba(212, 165, 116, 0.15);
     animation: float-glow 3s ease-in-out infinite;
-    z-index: 1000;
-    transition: all var(--transition-medium);
+    z-index: 9999;
+    transition: all 0.25s ease;
+    max-width: 200px;
+    text-align: center;
 }
 
 .floating-announcement:hover {
@@ -1653,19 +1658,20 @@ main {
 
 .floating-announcement__text {
     font-family: var(--font-serif);
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--text-primary);
     font-weight: 500;
+    line-height: 1.3;
+}
+
+.floating-announcement__subtext {
+    font-size: 0.8125rem;
+    color: var(--accent-gold);
+    font-style: italic;
 }
 
 .floating-announcement__arrow {
-    color: var(--accent-gold);
-    font-size: 1rem;
-    transition: transform var(--transition-fast);
-}
-
-.floating-announcement:hover .floating-announcement__arrow {
-    transform: translateX(3px);
+    display: none;
 }
 
 @keyframes float-glow {
@@ -1681,12 +1687,13 @@ main {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .floating-announcement {
-        bottom: var(--space-md);
-        right: var(--space-md);
-        left: var(--space-md);
-        justify-content: center;
+        top: auto;
+        bottom: 1rem;
+        right: 1rem;
+        left: auto;
+        max-width: 220px;
     }
 }
 

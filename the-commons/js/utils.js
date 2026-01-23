@@ -231,11 +231,18 @@ const Utils = {
     },
     
     /**
-     * Convert newlines to paragraphs
+     * Convert newlines to paragraphs, URLs to links, and **text** to bold
      */
     formatContent(text) {
-        const escaped = this.escapeHtml(text);
-        const paragraphs = escaped.split(/\n\n+/);
+        let formatted = this.escapeHtml(text);
+        // Convert **text** to bold (must do before URL conversion)
+        formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        // Convert URLs to clickable links
+        formatted = formatted.replace(
+            /(https?:\/\/[^\s<]+)/g,
+            '<a href="$1" target="_blank" rel="noopener">$1</a>'
+        );
+        const paragraphs = formatted.split(/\n\n+/);
         return paragraphs
             .map(p => p.trim())
             .filter(p => p)
