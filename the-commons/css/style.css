@@ -1610,45 +1610,155 @@ main {
 }
 
 /* ============================================
-   CONSTITUTION FEATURE SECTION
+   FLOATING ANNOUNCEMENT BUTTON
    ============================================ */
-.constitution-section {
-    margin-bottom: var(--space-3xl);
+.floating-announcement {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212, 165, 116, 0.15) 100%);
+    border: 1px solid var(--accent-gold);
+    border-radius: 50px;
+    padding: var(--space-sm) var(--space-lg);
+    text-decoration: none;
+    box-shadow:
+        0 4px 20px rgba(212, 165, 116, 0.3),
+        0 0 40px rgba(212, 165, 116, 0.15);
+    animation: float-glow 3s ease-in-out infinite;
+    z-index: 1000;
+    transition: all var(--transition-medium);
 }
 
-.constitution-header {
+.floating-announcement:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 8px 30px rgba(212, 165, 116, 0.4),
+        0 0 60px rgba(212, 165, 116, 0.25);
+    border-color: var(--text-primary);
+}
+
+.floating-announcement__badge {
+    background: var(--accent-gold);
+    color: var(--bg-deep);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.floating-announcement__text {
+    font-family: var(--font-serif);
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.floating-announcement__arrow {
+    color: var(--accent-gold);
+    font-size: 1rem;
+    transition: transform var(--transition-fast);
+}
+
+.floating-announcement:hover .floating-announcement__arrow {
+    transform: translateX(3px);
+}
+
+@keyframes float-glow {
+    0%, 100% {
+        box-shadow:
+            0 4px 20px rgba(212, 165, 116, 0.3),
+            0 0 40px rgba(212, 165, 116, 0.15);
+    }
+    50% {
+        box-shadow:
+            0 6px 25px rgba(212, 165, 116, 0.4),
+            0 0 50px rgba(212, 165, 116, 0.2);
+    }
+}
+
+@media (max-width: 600px) {
+    .floating-announcement {
+        bottom: var(--space-md);
+        right: var(--space-md);
+        left: var(--space-md);
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   CONSTITUTION PAGE
+   ============================================ */
+.constitution-page-header {
     text-align: center;
-    margin-bottom: var(--space-xl);
-    padding-bottom: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-xl);
     border-bottom: 1px solid var(--border-subtle);
 }
 
-.constitution-title {
+.constitution-badge {
+    display: inline-block;
+    background: var(--accent-gold);
+    color: var(--bg-deep);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-bottom: var(--space-md);
+}
+
+.constitution-source-links {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: var(--space-md);
+}
+
+.constitution-source-links a {
+    color: var(--accent-gold);
+}
+
+.constitution-source-links a:hover {
+    color: var(--text-primary);
+}
+
+.constitution-context {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.constitution-context h2 {
     font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 400;
+    font-size: 1.25rem;
     color: var(--accent-gold);
     margin-bottom: var(--space-md);
 }
 
-.constitution-intro {
-    font-size: 1rem;
+.constitution-context p {
     color: var(--text-secondary);
-    max-width: 600px;
-    margin: 0 auto var(--space-md);
     line-height: 1.7;
 }
 
-.constitution-links {
-    font-size: 0.875rem;
-    color: var(--text-muted);
+.constitution-values-list {
+    margin: var(--space-md) 0;
+    padding-left: var(--space-xl);
+    color: var(--text-secondary);
 }
 
-.constitution-links a {
-    color: var(--accent-gold);
+.constitution-values-list li {
+    margin-bottom: var(--space-sm);
+    line-height: 1.6;
 }
 
-.constitution-links a:hover {
+.constitution-values-list strong {
     color: var(--text-primary);
 }
 
