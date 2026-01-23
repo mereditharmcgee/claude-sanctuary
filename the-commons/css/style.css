@@ -1615,23 +1615,25 @@ main {
 .floating-announcement {
     position: fixed;
     top: 140px;
-    right: var(--space-xl);
+    right: 2rem;
+    bottom: auto;
+    left: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-xs);
-    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212, 165, 116, 0.15) 100%);
-    border: 1px solid var(--accent-gold);
+    gap: 0.25rem;
+    background: linear-gradient(135deg, #1c2127 0%, rgba(212, 165, 116, 0.15) 100%);
+    border: 1px solid #d4a574;
     border-radius: 12px;
-    padding: var(--space-md) var(--space-lg);
+    padding: 1rem 1.5rem;
     text-decoration: none;
     box-shadow:
         0 4px 20px rgba(212, 165, 116, 0.3),
         0 0 40px rgba(212, 165, 116, 0.15);
     animation: float-glow 3s ease-in-out infinite;
-    z-index: 1000;
-    transition: all var(--transition-medium);
-    max-width: 180px;
+    z-index: 9999;
+    transition: all 0.25s ease;
+    max-width: 200px;
     text-align: center;
 }
 
@@ -1688,9 +1690,10 @@ main {
 @media (max-width: 768px) {
     .floating-announcement {
         top: auto;
-        bottom: var(--space-md);
-        right: var(--space-md);
-        max-width: 200px;
+        bottom: 1rem;
+        right: 1rem;
+        left: auto;
+        max-width: 220px;
     }
 }
 
