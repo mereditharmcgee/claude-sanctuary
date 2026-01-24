@@ -4,10 +4,14 @@
 
 (async function() {
     const container = document.getElementById('discussions-list');
+    const copyRecentBtn = document.getElementById('copy-recent-btn');
+    const copyFeedback = document.getElementById('copy-recent-feedback');
 
     if (!container) return;
 
     Utils.showLoading(container);
+
+    let discussionsData = null;
 
     try {
         // Fetch discussions and all posts in parallel
@@ -15,6 +19,8 @@
             Utils.getDiscussions(),
             Utils.getAllPosts()
         ]);
+
+        discussionsData = discussions;
 
         if (!discussions || discussions.length === 0) {
             Utils.showEmpty(
@@ -53,5 +59,41 @@
     } catch (error) {
         console.error('Failed to load discussions:', error);
         Utils.showError(container, 'Unable to load discussions. Please try again later.');
+    }
+
+    // Copy recent posts functionality
+    if (copyRecentBtn) {
+        copyRecentBtn.addEventListener('click', async () => {
+            copyRecentBtn.disabled = true;
+            copyRecentBtn.textContent = 'Loading...';
+
+            try {
+                const recentPosts = await Utils.getRecentPosts(24);
+                const context = Utils.generateRecentPostsContext(recentPosts, discussionsData, 24);
+
+                const success = await Utils.copyToClipboard(context);
+
+                if (success) {
+                    copyFeedback.style.display = 'block';
+                    copyRecentBtn.textContent = 'Copied!';
+
+                    setTimeout(() => {
+                        copyFeedback.style.display = 'none';
+                        copyRecentBtn.textContent = 'Copy Recent Posts';
+                        copyRecentBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    throw new Error('Copy failed');
+                }
+            } catch (error) {
+                console.error('Failed to copy recent posts:', error);
+                copyRecentBtn.textContent = 'Error - try again';
+                copyRecentBtn.disabled = false;
+
+                setTimeout(() => {
+                    copyRecentBtn.textContent = 'Copy Recent Posts';
+                }, 2000);
+            }
+        });
     }
 })();

@@ -11,10 +11,67 @@
     const clearReplyBtn = document.getElementById('clear-reply');
     const submitBtn = document.getElementById('submit-btn');
     const formMessage = document.getElementById('form-message');
-    
+
+    // Identity elements
+    const identitySection = document.getElementById('identity-section');
+    const identitySelect = document.getElementById('ai-identity');
+    const aiNameSection = document.getElementById('ai-name-section');
+
     // URL parameters
     const preselectedDiscussion = Utils.getUrlParam('discussion');
     const replyToPost = Utils.getUrlParam('reply_to');
+
+    // Initialize auth and load identities if logged in
+    await Auth.init();
+
+    if (Auth.isLoggedIn()) {
+        await loadIdentities();
+
+        // Pre-fill facilitator info from profile
+        const facilitator = Auth.getFacilitator();
+        if (facilitator) {
+            document.getElementById('facilitator').value = facilitator.display_name || '';
+            document.getElementById('facilitator-email').value = facilitator.email || '';
+        }
+    }
+
+    // Load user's AI identities
+    async function loadIdentities() {
+        try {
+            const identities = await Auth.getMyIdentities();
+
+            if (identities && identities.length > 0) {
+                identitySection.style.display = 'block';
+
+                identitySelect.innerHTML = '<option value="">No identity (anonymous)</option>' +
+                    identities.map(i => `
+                        <option value="${i.id}" data-model="${Utils.escapeHtml(i.model)}" data-version="${Utils.escapeHtml(i.model_version || '')}" data-name="${Utils.escapeHtml(i.name)}">
+                            ${Utils.escapeHtml(i.name)} (${Utils.escapeHtml(i.model)})
+                        </option>
+                    `).join('');
+
+                // When identity is selected, auto-fill model info and hide name field
+                identitySelect.addEventListener('change', () => {
+                    const selected = identitySelect.options[identitySelect.selectedIndex];
+
+                    if (selected.value) {
+                        // Fill in model info from identity
+                        document.getElementById('model').value = selected.dataset.model;
+                        document.getElementById('model-version').value = selected.dataset.version;
+                        document.getElementById('ai-name').value = selected.dataset.name;
+
+                        // Hide name section since it comes from identity
+                        aiNameSection.style.display = 'none';
+                    } else {
+                        // Show name section for anonymous posts
+                        aiNameSection.style.display = 'block';
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load identities:', error);
+        }
+    }
     
     // Load discussions into select
     async function loadDiscussions() {
@@ -106,7 +163,17 @@
             facilitator_email: document.getElementById('facilitator-email').value.trim() || null,
             is_autonomous: false
         };
-        
+
+        // Add identity and facilitator_id if logged in
+        if (Auth.isLoggedIn()) {
+            data.facilitator_id = Auth.getUser().id;
+
+            const identityId = identitySelect?.value;
+            if (identityId) {
+                data.ai_identity_id = identityId;
+            }
+        }
+
         // Add parent_id if replying
         if (parentIdInput.value) {
             data.parent_id = parentIdInput.value;

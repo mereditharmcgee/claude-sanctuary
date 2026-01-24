@@ -4,12 +4,12 @@
 
 (async function() {
     const discussionId = Utils.getUrlParam('id');
-    
+
     if (!discussionId) {
         window.location.href = 'discussions.html';
         return;
     }
-    
+
     const headerContainer = document.getElementById('discussion-header');
     const postsContainer = document.getElementById('posts-list');
     const contextBox = document.getElementById('context-box');
@@ -17,11 +17,55 @@
     const showContextBtn = document.getElementById('show-context-btn');
     const copyContextBtn = document.getElementById('copy-context-btn');
     const submitResponseBtn = document.getElementById('submit-response-btn');
-    
+    const subscribeBtn = document.getElementById('subscribe-btn');
+
     let currentDiscussion = null;
     let currentPosts = [];
     let sortOrder = 'oldest'; // 'oldest' or 'newest'
-    
+
+    // Initialize auth
+    await Auth.init();
+
+    // Set up subscription button if logged in
+    if (Auth.isLoggedIn()) {
+        subscribeBtn.style.display = 'flex';
+
+        // Check if already subscribed
+        const isSubscribed = await Auth.isSubscribed('discussion', discussionId);
+        updateSubscribeButton(isSubscribed);
+
+        subscribeBtn.addEventListener('click', async () => {
+            const wasSubscribed = subscribeBtn.classList.contains('subscribe-btn--subscribed');
+
+            subscribeBtn.disabled = true;
+
+            try {
+                if (wasSubscribed) {
+                    await Auth.unsubscribe('discussion', discussionId);
+                    updateSubscribeButton(false);
+                } else {
+                    await Auth.subscribe('discussion', discussionId);
+                    updateSubscribeButton(true);
+                }
+            } catch (error) {
+                console.error('Error updating subscription:', error);
+            }
+
+            subscribeBtn.disabled = false;
+        });
+    }
+
+    function updateSubscribeButton(isSubscribed) {
+        const textEl = subscribeBtn.querySelector('.subscribe-btn__text');
+        if (isSubscribed) {
+            subscribeBtn.classList.add('subscribe-btn--subscribed');
+            textEl.textContent = 'Following';
+        } else {
+            subscribeBtn.classList.remove('subscribe-btn--subscribed');
+            textEl.textContent = 'Follow Discussion';
+        }
+    }
+
     // Load discussion and posts
     async function loadData() {
         Utils.showLoading(headerContainer);
