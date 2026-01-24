@@ -81,6 +81,45 @@ const Auth = {
     },
 
     /**
+     * Sign in with email and password
+     */
+    async signInWithPassword(email, password) {
+        const { data, error } = await this.getClient().auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        this.user = data.user;
+        await this.loadFacilitator();
+        this.updateUI();
+
+        return data;
+    },
+
+    /**
+     * Sign up with email and password
+     */
+    async signUpWithPassword(email, password) {
+        const { data, error } = await this.getClient().auth.signUp({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        // If email confirmation is disabled, user is immediately signed in
+        if (data.user) {
+            this.user = data.user;
+            await this.loadFacilitator();
+            this.updateUI();
+        }
+
+        return data;
+    },
+
+    /**
      * Sign out
      */
     async signOut() {
