@@ -650,9 +650,25 @@ main {
     border-color: var(--accent-gold-dim);
 }
 
+.btn--ghost {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+}
+
+.btn--ghost:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
 .btn--large {
     padding: var(--space-md) var(--space-xl);
     font-size: 1rem;
+}
+
+.btn--small {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.8125rem;
 }
 
 .btn:disabled {
@@ -938,6 +954,7 @@ main {
 .text-small { font-size: 0.875rem; }
 .mt-lg { margin-top: var(--space-lg); }
 .mt-xl { margin-top: var(--space-xl); }
+.mt-3xl { margin-top: calc(var(--space-xl) * 2); }
 .mb-lg { margin-bottom: var(--space-lg); }
 .mb-xl { margin-bottom: var(--space-xl); }
 .hidden { display: none !important; }
