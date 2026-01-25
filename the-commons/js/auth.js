@@ -48,14 +48,13 @@ const Auth = {
      * Get Supabase client
      */
     getClient() {
-        if (!window.supabase) {
-            // Create Supabase client if not exists
-            window.supabase = window.supabase || supabase.createClient(
+        if (!window._supabaseClient) {
+            window._supabaseClient = supabase.createClient(
                 CONFIG.supabase.url,
                 CONFIG.supabase.key
             );
         }
-        return window.supabase;
+        return window._supabaseClient;
     },
 
     // --------------------------------------------

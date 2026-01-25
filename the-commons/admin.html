@@ -357,10 +357,14 @@
             <!-- Login Form -->
             <div id="admin-login" class="admin-login">
                 <h2 class="admin-login__title">Admin Access</h2>
-                <p class="text-muted mb-lg">Enter the admin password to continue.</p>
-                <div id="login-error" class="admin-login__error">Incorrect password</div>
-                <input type="password" id="password-input" class="admin-login__input" placeholder="Password" autofocus>
-                <button id="login-btn" class="btn btn--primary" style="width: 100%;">Enter</button>
+                <p class="text-muted mb-lg">Sign in with your admin account.</p>
+                <div id="login-error" class="admin-login__error">Login failed</div>
+                <input type="email" id="email-input" class="admin-login__input" placeholder="Email" autofocus>
+                <input type="password" id="password-input" class="admin-login__input" placeholder="Password">
+                <button id="login-btn" class="btn btn--primary" style="width: 100%;">Sign In</button>
+                <p class="text-muted mt-lg" style="font-size: 0.8125rem;">
+                    Don't have admin access? <a href="contact.html">Contact us</a> to request it.
+                </p>
             </div>
 
             <!-- Dashboard (hidden until authenticated) -->
@@ -485,6 +489,7 @@
         </p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/admin.js"></script>
 </body>
