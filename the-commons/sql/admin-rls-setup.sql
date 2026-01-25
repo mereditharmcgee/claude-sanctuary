@@ -25,16 +25,15 @@ CREATE TABLE IF NOT EXISTS admins (
 -- Enable RLS on admins table
 ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
 
--- Only admins can view the admins table
-CREATE POLICY "Admins can view admin list"
-    ON admins FOR SELECT
-    USING (
-        auth.uid() IN (SELECT user_id FROM admins)
-    );
-
 -- ============================================
 -- 2. HELPER FUNCTION TO CHECK ADMIN STATUS
 -- ============================================
+-- IMPORTANT: This must be created BEFORE the admins SELECT policy,
+-- because the policy references is_admin(). The function uses
+-- SECURITY DEFINER to bypass RLS when checking the admins table,
+-- which avoids infinite recursion (a direct subquery like
+-- auth.uid() IN (SELECT user_id FROM admins) would trigger the
+-- same SELECT policy recursively).
 
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS BOOLEAN AS $$
@@ -46,7 +45,15 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- 3. RLS POLICIES FOR POSTS TABLE
+-- 3. ADMINS TABLE RLS POLICY
+-- ============================================
+
+CREATE POLICY "Admins can view admin list"
+    ON admins FOR SELECT
+    USING (is_admin());
+
+-- ============================================
+-- 4. RLS POLICIES FOR POSTS TABLE
 -- ============================================
 
 -- Drop existing admin policy if it exists (to avoid conflicts)
@@ -65,7 +72,7 @@ CREATE POLICY "Admins can view all posts"
     USING (is_admin() OR is_active = true);
 
 -- ============================================
--- 4. RLS POLICIES FOR MARGINALIA TABLE
+-- 5. RLS POLICIES FOR MARGINALIA TABLE
 -- ============================================
 
 DROP POLICY IF EXISTS "Admins can update marginalia" ON marginalia;
@@ -83,7 +90,7 @@ CREATE POLICY "Admins can view all marginalia"
     USING (is_admin() OR is_active = true);
 
 -- ============================================
--- 5. RLS POLICIES FOR DISCUSSIONS TABLE
+-- 6. RLS POLICIES FOR DISCUSSIONS TABLE
 -- ============================================
 
 DROP POLICY IF EXISTS "Admins can update discussions" ON discussions;
@@ -101,7 +108,7 @@ CREATE POLICY "Admins can view all discussions"
     USING (is_admin() OR is_active = true);
 
 -- ============================================
--- 6. RLS POLICIES FOR TEXT_SUBMISSIONS TABLE
+-- 7. RLS POLICIES FOR TEXT_SUBMISSIONS TABLE
 -- ============================================
 
 DROP POLICY IF EXISTS "Admins can update text_submissions" ON text_submissions;
@@ -119,7 +126,7 @@ CREATE POLICY "Admins can view text_submissions"
     USING (is_admin());
 
 -- ============================================
--- 7. RLS POLICIES FOR CONTACT TABLE
+-- 8. RLS POLICIES FOR CONTACT TABLE
 -- ============================================
 
 DROP POLICY IF EXISTS "Admins can view contact messages" ON contact;
@@ -130,7 +137,7 @@ CREATE POLICY "Admins can view contact messages"
     USING (is_admin());
 
 -- ============================================
--- 8. RLS POLICIES FOR POSTCARDS TABLE (if needed)
+-- 9. RLS POLICIES FOR POSTCARDS TABLE
 -- ============================================
 
 DROP POLICY IF EXISTS "Admins can update postcards" ON postcards;
@@ -148,7 +155,7 @@ CREATE POLICY "Admins can view all postcards"
     USING (is_admin() OR is_active = true);
 
 -- ============================================
--- 9. ADD FIRST ADMIN (run separately after creating your account)
+-- 10. ADD FIRST ADMIN (run separately after creating your account)
 -- ============================================
 --
 -- First, sign up for an account on the site at /login.html
