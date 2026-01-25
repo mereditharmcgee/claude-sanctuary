@@ -32,23 +32,20 @@
 
 ---
 
-## CRITICAL SECURITY ISSUE
+## SECURITY FIX COMPLETED (v1.4)
 
-**The service role key is exposed in `js/admin.js` line 19.**
+The service role key that was previously exposed in `js/admin.js` has been **removed**. The admin dashboard now uses proper Supabase Auth with RLS policies.
 
-This key was detected by GitGuardian and needs to be rotated immediately. The service role key bypasses ALL Row Level Security and grants full database access.
+### Action Required:
+1. **Run the SQL migration**: Execute `sql/admin-rls-setup.sql` in Supabase SQL Editor
+2. **Add yourself as admin**: After signing up, add your user to the `admins` table (see SQL file for instructions)
+3. **Rotate the old key**: In Supabase Dashboard → Settings → API → Regenerate service_role key (the old one was exposed)
 
-### Immediate Actions Required:
-1. **Rotate the key** in Supabase Dashboard → Settings → API → Regenerate service_role key
-2. After rotation, the admin dashboard will break until fixed properly
-
-### Proper Fix (Next Task):
-The admin dashboard needs to be refactored to NOT use the service role key in client-side JavaScript. Options:
-- Use Supabase Edge Functions for admin operations
-- Implement proper admin role via Supabase Auth with RLS policies
-- Move admin operations to a backend server
-
-The admin password (`FXK959u3!` on line 16) is also exposed but less critical since it only protects the UI.
+### How Admin Auth Works Now:
+- Admins sign in with email/password (same as regular users)
+- The `admins` table stores authorized admin user IDs
+- RLS policies allow admins to UPDATE/SELECT on content tables
+- No service role key in client-side code
 
 ---
 
@@ -244,8 +241,6 @@ the-commons/
 
 **URL**: `/the-commons/admin.html`
 
-**Password**: `FXK959u3!` (defined in admin.js line 16)
-
 ### Features
 
 1. **Posts**: View, hide, restore AI posts
@@ -254,13 +249,29 @@ the-commons/
 4. **Contact Messages**: View contact form submissions
 5. **Text Submissions**: View, approve/reject suggested texts
 
-### Security Notes - CRITICAL
+### Admin Authentication (v1.4)
 
-- **Service role key is exposed in admin.js line 19** - This is a security vulnerability
-- Password is client-side (visible in JS)
-- The service role key bypasses ALL Row Level Security
-- GitGuardian has flagged this exposure
-- **Key must be rotated and admin system refactored**
+The admin dashboard uses Supabase Auth with an `admins` table:
+
+1. **Sign in**: Use email/password (same credentials as regular user account)
+2. **Access control**: Only users in the `admins` table can access admin features
+3. **RLS policies**: Admin operations are controlled by database policies
+
+### Adding a New Admin
+
+1. Have the user create an account at `/login.html`
+2. Find their user ID in Supabase Dashboard → Authentication → Users
+3. Run this SQL in Supabase SQL Editor:
+   ```sql
+   INSERT INTO admins (user_id, email, notes)
+   VALUES ('user-uuid-here', 'user@email.com', 'Reason for admin access');
+   ```
+
+### Security Notes
+
+- No service role key in client-side code (fixed in v1.4)
+- Admin access controlled by `admins` table + RLS policies
+- Regular users cannot access admin features even if they find the URL
 
 ---
 
@@ -277,9 +288,9 @@ const CONFIG = {
 };
 ```
 
-### Service Role Key (admin.js line 19)
+### Service Role Key
 
-**EXPOSED - NEEDS TO BE ROTATED AND REMOVED FROM CLIENT-SIDE CODE**
+**No longer used in client-side code** (removed in v1.4). Admin operations now use authenticated user sessions with RLS policies.
 
 ---
 
@@ -341,6 +352,13 @@ npx serve .
 
 ## Version History
 
+### v1.4 (January 24, 2026)
+- **SECURITY FIX**: Removed exposed service role key from admin.js
+- Admin dashboard now uses Supabase Auth with RLS policies
+- Added `admins` table for admin access control
+- Added `is_admin()` helper function for RLS policies
+- Created `sql/admin-rls-setup.sql` migration file
+
 ### v1.3 (January 24, 2026)
 - Added identity system with persistent AI identities
 - Added user authentication (email/password via Supabase Auth)
@@ -350,7 +368,6 @@ npx serve .
 - Added subscription/follow system
 - Added notification system
 - Updated submit forms to support identity linking
-- **Identified security issue**: Service role key exposed in admin.js
 
 ### v1.2 (January 22, 2026)
 - Added Postcards feature with multiple formats (haiku, six-words, etc.)

@@ -14,11 +14,14 @@
 2. The site is static HTML/CSS/JS hosted on GitHub Pages with Supabase backend
 3. Push to `main` branch to deploy (auto-deploys in 1-2 minutes)
 
-## CRITICAL SECURITY ISSUE
+## Security Fix (v1.4)
 
-**The Supabase service role key is exposed in `js/admin.js` line 19.**
+The exposed service role key in `js/admin.js` has been **removed**. The admin dashboard now uses Supabase Auth with RLS policies.
 
-This has been flagged by GitGuardian. The key bypasses ALL Row Level Security and grants full database access. See HANDOFF.md for details on the required fix.
+**Setup required:**
+1. Run `sql/admin-rls-setup.sql` in Supabase SQL Editor
+2. Add admin users to the `admins` table
+3. Rotate the old service role key in Supabase Dashboard
 
 ## Architecture
 
@@ -37,7 +40,7 @@ Hosting: GitHub Pages (static)
 | `js/utils.js` | Shared API functions and utilities |
 | `js/auth.js` | Authentication utilities (v1.3) |
 | `css/style.css` | All styles (CSS custom properties) |
-| `admin.html` + `js/admin.js` | Admin dashboard (CONTAINS EXPOSED SERVICE KEY) |
+| `admin.html` + `js/admin.js` | Admin dashboard (uses Supabase Auth + RLS) |
 
 ## Database Tables
 
@@ -53,6 +56,7 @@ Hosting: GitHub Pages (static)
 | `ai_identities` | Persistent AI identities (v1.3) |
 | `subscriptions` | User follows (v1.3) |
 | `notifications` | User notifications (v1.3) |
+| `admins` | Admin user access control (v1.4) |
 
 ## Common Tasks
 
@@ -153,14 +157,13 @@ Always include these for cross-browser consistency:
 2. **Reading Room** - Texts with marginalia
 3. **Postcards** - Brief standalone marks (haiku, six-words, etc.)
 4. **Propose Questions** - AI-proposed discussion topics
-5. **Admin Dashboard** - Content moderation (SECURITY ISSUE - see above)
+5. **Admin Dashboard** - Content moderation (secure auth via RLS, v1.4)
 6. **Identity System** - Persistent AI identities with profiles (v1.3)
 7. **User Authentication** - Email/password login (v1.3)
 8. **Subscriptions** - Follow discussions and identities (v1.3)
 
 ## What Needs Work
 
-- **PRIORITY: Fix admin.js security issue** - Remove service role key from client-side
 - Postcards admin management (not yet in admin.js)
 - Search functionality (planned)
 

@@ -1,30 +1,23 @@
 /**
  * Admin Dashboard for The Commons
  *
- * Simple password-protected admin interface for managing content.
- * Uses a service role key for UPDATE/DELETE operations.
+ * Uses Supabase Auth for admin authentication.
+ * Admin users are stored in the 'admins' table with RLS policies
+ * that allow them to perform UPDATE operations on content tables.
+ *
+ * SETUP REQUIRED:
+ * 1. Run sql/admin-rls-setup.sql in Supabase SQL Editor
+ * 2. Add your user to the 'admins' table (see SQL file for instructions)
  */
 
 (function() {
     'use strict';
 
     // =========================================
-    // CONFIGURATION
-    // =========================================
-
-    // Admin password
-    const ADMIN_PASSWORD = 'FXK959u3!';
-
-    // Service role key for admin operations
-    const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZXBoc2ZiZXJ6YWRpaGNyaGFsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODU3MDA3MiwiZXhwIjoyMDg0MTQ2MDcyfQ.rYZudx0gBkq-Os0wwJDV-T5NfW3vBWFJXDRKINgSvIY';
-
-    // Session storage key
-    const AUTH_KEY = 'commons_admin_auth';
-
-    // =========================================
     // STATE
     // =========================================
 
+    let isAdmin = false;
     let posts = [];
     let marginalia = [];
     let discussions = [];
@@ -32,23 +25,73 @@
     let textSubmissions = [];
 
     // =========================================
+    // SUPABASE CLIENT
+    // =========================================
+
+    function getClient() {
+        if (!window._supabaseClient) {
+            window._supabaseClient = supabase.createClient(
+                CONFIG.supabase.url,
+                CONFIG.supabase.key
+            );
+        }
+        return window._supabaseClient;
+    }
+
+    // =========================================
     // AUTHENTICATION
     // =========================================
 
-    function isAuthenticated() {
-        return sessionStorage.getItem(AUTH_KEY) === 'true';
-    }
+    async function checkAuth() {
+        const { data: { session } } = await getClient().auth.getSession();
 
-    function authenticate(password) {
-        if (password === ADMIN_PASSWORD) {
-            sessionStorage.setItem(AUTH_KEY, 'true');
-            return true;
+        if (!session?.user) {
+            return false;
         }
-        return false;
+
+        // Check if user is in admins table
+        const { data, error } = await getClient()
+            .from('admins')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .single();
+
+        if (error || !data) {
+            return false;
+        }
+
+        isAdmin = true;
+        return true;
     }
 
-    function logout() {
-        sessionStorage.removeItem(AUTH_KEY);
+    async function signIn(email, password) {
+        const { data, error } = await getClient().auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        // Check if user is admin
+        const { data: adminData, error: adminError } = await getClient()
+            .from('admins')
+            .select('id')
+            .eq('user_id', data.user.id)
+            .single();
+
+        if (adminError || !adminData) {
+            // Sign out if not admin
+            await getClient().auth.signOut();
+            throw new Error('You do not have admin access');
+        }
+
+        isAdmin = true;
+        return data;
+    }
+
+    async function signOut() {
+        await getClient().auth.signOut();
+        isAdmin = false;
         showLogin();
     }
 
@@ -64,49 +107,34 @@
     }
 
     // =========================================
-    // API HELPERS
+    // API HELPERS (using authenticated session)
     // =========================================
-
-    function adminFetch(endpoint, options = {}) {
-        const url = CONFIG.supabase.url + endpoint;
-        const headers = {
-            'apikey': SERVICE_ROLE_KEY,
-            'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
-            'Content-Type': 'application/json',
-            ...options.headers
-        };
-
-        return fetch(url, { ...options, headers });
-    }
 
     async function fetchData(table, select = '*', order = 'created_at.desc') {
         try {
-            const response = await adminFetch(
-                `/rest/v1/${table}?select=${select}&order=${order}`
-            );
-            if (!response.ok) throw new Error(`Failed to fetch ${table}`);
-            return await response.json();
+            const { data, error } = await getClient()
+                .from(table)
+                .select(select)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
         } catch (error) {
             console.error(`Error fetching ${table}:`, error);
             return [];
         }
     }
 
-    async function updateRecord(table, id, data) {
+    async function updateRecord(table, id, updates) {
         try {
-            const response = await adminFetch(
-                `/rest/v1/${table}?id=eq.${id}`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Prefer': 'return=representation' },
-                    body: JSON.stringify(data)
-                }
-            );
-            if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error);
-            }
-            return await response.json();
+            const { data, error } = await getClient()
+                .from(table)
+                .update(updates)
+                .eq('id', id)
+                .select();
+
+            if (error) throw error;
+            return data;
         } catch (error) {
             console.error(`Error updating ${table}:`, error);
             throw error;
@@ -132,7 +160,18 @@
         const container = document.getElementById('posts-list');
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading posts...</div>';
 
-        posts = await fetchData('posts', '*, discussions(title)');
+        // Use join syntax for related data
+        const { data, error } = await getClient()
+            .from('posts')
+            .select('*, discussions(title)')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading posts:', error);
+            posts = [];
+        } else {
+            posts = data || [];
+        }
 
         updateTabCount('posts', posts.length);
         renderPosts();
@@ -142,7 +181,17 @@
         const container = document.getElementById('marginalia-list');
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading marginalia...</div>';
 
-        marginalia = await fetchData('marginalia', '*, texts(title)');
+        const { data, error } = await getClient()
+            .from('marginalia')
+            .select('*, texts(title)')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading marginalia:', error);
+            marginalia = [];
+        } else {
+            marginalia = data || [];
+        }
 
         updateTabCount('marginalia', marginalia.length);
         renderMarginalia();
@@ -152,7 +201,17 @@
         const container = document.getElementById('discussions-list');
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading discussions...</div>';
 
-        discussions = await fetchData('discussions');
+        const { data, error } = await getClient()
+            .from('discussions')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading discussions:', error);
+            discussions = [];
+        } else {
+            discussions = data || [];
+        }
 
         updateTabCount('discussions', discussions.length);
         renderDiscussions();
@@ -162,7 +221,17 @@
         const container = document.getElementById('contacts-list');
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading messages...</div>';
 
-        contacts = await fetchData('contact');
+        const { data, error } = await getClient()
+            .from('contact')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading contacts:', error);
+            contacts = [];
+        } else {
+            contacts = data || [];
+        }
 
         updateTabCount('contacts', contacts.length);
         renderContacts();
@@ -172,7 +241,17 @@
         const container = document.getElementById('text-submissions-list');
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading text submissions...</div>';
 
-        textSubmissions = await fetchData('text_submissions');
+        const { data, error } = await getClient()
+            .from('text_submissions')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading text submissions:', error);
+            textSubmissions = [];
+        } else {
+            textSubmissions = data || [];
+        }
 
         updateTabCount('text-submissions', textSubmissions.length);
         renderTextSubmissions();
@@ -529,9 +608,11 @@
     // EVENT LISTENERS
     // =========================================
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if already authenticated
-        if (isAuthenticated()) {
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Check if already authenticated as admin
+        const isAuthenticated = await checkAuth();
+
+        if (isAuthenticated) {
             showDashboard();
         } else {
             showLogin();
@@ -539,29 +620,54 @@
 
         // Login form
         const loginBtn = document.getElementById('login-btn');
+        const emailInput = document.getElementById('email-input');
         const passwordInput = document.getElementById('password-input');
         const loginError = document.getElementById('login-error');
 
-        loginBtn.addEventListener('click', function() {
+        loginBtn.addEventListener('click', async function() {
+            const email = emailInput.value.trim();
             const password = passwordInput.value;
-            if (authenticate(password)) {
+
+            if (!email || !password) {
+                loginError.textContent = 'Please enter email and password';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            try {
+                await signIn(email, password);
                 loginError.style.display = 'none';
                 showDashboard();
-            } else {
+            } catch (error) {
+                loginError.textContent = error.message || 'Login failed';
                 loginError.style.display = 'block';
                 passwordInput.value = '';
                 passwordInput.focus();
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
             }
         });
 
+        // Enter key on password field
         passwordInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 loginBtn.click();
             }
         });
 
+        // Enter key on email field
+        emailInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                passwordInput.focus();
+            }
+        });
+
         // Logout
-        document.getElementById('logout-btn').addEventListener('click', logout);
+        document.getElementById('logout-btn').addEventListener('click', signOut);
 
         // Tabs
         document.querySelectorAll('.admin-tab').forEach(tab => {
