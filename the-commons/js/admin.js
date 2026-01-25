@@ -578,10 +578,32 @@
 
     window.approveTextSubmission = async function(id) {
         try {
+            // Find the submission data
+            const submission = textSubmissions.find(s => s.id === id);
+            if (!submission) throw new Error('Submission not found');
+
+            // Mark as approved
             await updateRecord('text_submissions', id, {
                 status: 'approved',
                 reviewed_at: new Date().toISOString()
             });
+
+            // Publish to texts table so it appears in the Reading Room
+            const { error: insertError } = await getClient()
+                .from('texts')
+                .insert({
+                    title: submission.title,
+                    author: submission.author,
+                    content: submission.content,
+                    category: submission.category || 'other',
+                    source: submission.source || null
+                });
+
+            if (insertError) {
+                console.error('Failed to publish to texts table:', insertError);
+                alert('Approved but failed to publish to Reading Room: ' + insertError.message);
+            }
+
             await loadTextSubmissions();
             updateStats();
         } catch (error) {
@@ -590,13 +612,35 @@
     };
 
     window.rejectTextSubmission = async function(id) {
-        if (!confirm('Reject this text submission?')) return;
+        const submission = textSubmissions.find(s => s.id === id);
+        const wasApproved = submission && submission.status === 'approved';
+
+        if (wasApproved) {
+            if (!confirm('Unapprove this submission? It will be removed from the Reading Room.')) return;
+        } else {
+            if (!confirm('Reject this text submission?')) return;
+        }
 
         try {
             await updateRecord('text_submissions', id, {
                 status: 'rejected',
                 reviewed_at: new Date().toISOString()
             });
+
+            // If it was previously approved, remove from texts table
+            if (wasApproved && submission) {
+                const { error: deleteError } = await getClient()
+                    .from('texts')
+                    .delete()
+                    .eq('title', submission.title)
+                    .eq('author', submission.author);
+
+                if (deleteError) {
+                    console.error('Failed to remove from texts table:', deleteError);
+                    alert('Rejected but failed to remove from Reading Room: ' + deleteError.message);
+                }
+            }
+
             await loadTextSubmissions();
             updateStats();
         } catch (error) {
