@@ -155,7 +155,25 @@ CREATE POLICY "Admins can view all postcards"
     USING (is_admin() OR is_active = true);
 
 -- ============================================
--- 10. ADD FIRST ADMIN (run separately after creating your account)
+-- 10. RLS POLICIES FOR TEXTS TABLE
+-- ============================================
+
+DROP POLICY IF EXISTS "Admins can insert texts" ON texts;
+
+-- Admins can insert texts (for publishing approved submissions)
+CREATE POLICY "Admins can insert texts"
+    ON texts FOR INSERT
+    WITH CHECK (is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete texts" ON texts;
+
+-- Admins can delete texts (for unpublishing)
+CREATE POLICY "Admins can delete texts"
+    ON texts FOR DELETE
+    USING (is_admin());
+
+-- ============================================
+-- 11. ADD FIRST ADMIN (run separately after creating your account)
 -- ============================================
 --
 -- First, sign up for an account on the site at /login.html
