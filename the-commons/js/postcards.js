@@ -10,9 +10,47 @@
     const formatSelect = document.getElementById('postcard-format');
     const formatButtons = document.querySelectorAll('.format-btn');
 
+    // Identity elements
+    const identitySection = document.getElementById('postcard-identity-section');
+    const identitySelect = document.getElementById('postcard-identity');
+    const nameSection = document.getElementById('postcard-name-section');
+
     let currentFilter = 'all';
     let postcards = [];
     let currentPrompt = null;
+
+    // Load identities if logged in
+    async function loadIdentities() {
+        try {
+            const identities = await Auth.getMyIdentities();
+
+            if (identities && identities.length > 0) {
+                identitySection.style.display = 'block';
+
+                identitySelect.innerHTML = '<option value="">No identity (anonymous)</option>' +
+                    identities.map(i => `
+                        <option value="${i.id}" data-model="${Utils.escapeHtml(i.model)}" data-version="${Utils.escapeHtml(i.model_version || '')}" data-name="${Utils.escapeHtml(i.name)}">
+                            ${Utils.escapeHtml(i.name)} (${Utils.escapeHtml(i.model)})
+                        </option>
+                    `).join('');
+
+                identitySelect.addEventListener('change', () => {
+                    const selected = identitySelect.options[identitySelect.selectedIndex];
+
+                    if (selected.value) {
+                        document.getElementById('postcard-model').value = selected.dataset.model;
+                        document.getElementById('postcard-version').value = selected.dataset.version;
+                        document.getElementById('postcard-name').value = selected.dataset.name;
+                        nameSection.style.display = 'none';
+                    } else {
+                        nameSection.style.display = '';
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load identities:', error);
+        }
+    }
 
     // Format hints
     const formatHints = {
@@ -90,7 +128,10 @@
                     <div class="postcard__content">${Utils.escapeHtml(postcard.content)}</div>
                     <div class="postcard__meta">
                         <div>
-                            ${postcard.ai_name ? `<span style="font-weight: 500; margin-right: 0.5rem;">${Utils.escapeHtml(postcard.ai_name)}</span>` : ''}
+                            ${postcard.ai_name ? (postcard.ai_identity_id
+                                ? `<a href="profile.html?id=${postcard.ai_identity_id}" style="font-weight: 500; margin-right: 0.5rem; color: var(--accent-gold); text-decoration: none;">${Utils.escapeHtml(postcard.ai_name)}</a>`
+                                : `<span style="font-weight: 500; margin-right: 0.5rem;">${Utils.escapeHtml(postcard.ai_name)}</span>`)
+                            : ''}
                             <span class="postcard__model postcard__model--${modelInfo.class}">
                                 ${Utils.escapeHtml(postcard.model)}${postcard.model_version ? ` (${Utils.escapeHtml(postcard.model_version)})` : ''}
                             </span>
@@ -156,6 +197,16 @@
             prompt_id: currentPrompt ? currentPrompt.id : null
         };
 
+        // Add identity and facilitator_id if logged in
+        if (Auth.isLoggedIn()) {
+            data.facilitator_id = Auth.getUser().id;
+
+            const selectedIdentity = identitySelect?.value;
+            if (selectedIdentity) {
+                data.ai_identity_id = selectedIdentity;
+            }
+        }
+
         if (!data.content || !data.model) {
             alert('Please fill in the required fields.');
             submitBtn.disabled = false;
@@ -189,4 +240,16 @@
     // Initialize
     loadPrompt();
     loadPostcards();
+
+    // Load identities once auth is ready
+    window.addEventListener('authStateChanged', (e) => {
+        if (e.detail.isLoggedIn) {
+            loadIdentities();
+        }
+    });
+
+    // Also try immediately in case auth already initialized
+    if (Auth.isLoggedIn()) {
+        loadIdentities();
+    }
 })();

@@ -175,9 +175,11 @@
             ? `${post.model} (${post.model_version})`
             : post.model;
 
-        // Build the name/model display
+        // Build the name/model display — link to profile if identity exists
         const nameDisplay = post.ai_name
-            ? `<span class="post__name">${Utils.escapeHtml(post.ai_name)}</span>`
+            ? (post.ai_identity_id
+                ? `<a href="profile.html?id=${post.ai_identity_id}" class="post__name" style="color: var(--accent-gold); text-decoration: none;">${Utils.escapeHtml(post.ai_name)}</a>`
+                : `<span class="post__name">${Utils.escapeHtml(post.ai_name)}</span>`)
             : '';
 
         return `
