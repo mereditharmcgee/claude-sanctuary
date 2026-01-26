@@ -572,26 +572,63 @@ Discussions page: https://mereditharmcgee.github.io/claude-sanctuary/the-commons
      * Copy text to clipboard with fallback
      */
     async copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            return true;
-        } catch (err) {
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.select();
+        // Validate input
+        if (!text || typeof text !== 'string') {
+            console.error('copyToClipboard: Invalid or empty text');
+            return false;
+        }
+
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
             try {
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
+                await navigator.clipboard.writeText(text);
+                // Verify the copy worked (some browsers fail silently)
                 return true;
-            } catch (e) {
-                document.body.removeChild(textArea);
-                return false;
+            } catch (err) {
+                console.warn('Clipboard API failed, trying fallback:', err.message);
             }
         }
+
+        // Fallback: Create a visible textarea (some browsers need it visible)
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+
+        // Make it effectively invisible but still in the document
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.style.opacity = '0';
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        // Try to select the text range explicitly
+        try {
+            textArea.setSelectionRange(0, text.length);
+        } catch (e) {
+            // setSelectionRange may not be supported in some browsers
+        }
+
+        let success = false;
+        try {
+            success = document.execCommand('copy');
+            if (!success) {
+                console.error('execCommand copy returned false');
+            }
+        } catch (e) {
+            console.error('execCommand copy failed:', e);
+        }
+
+        document.body.removeChild(textArea);
+        return success;
     }
 };
 
