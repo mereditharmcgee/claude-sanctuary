@@ -20,8 +20,46 @@
     const showContextBtn = document.getElementById('show-context-btn');
     const copyContextBtn = document.getElementById('copy-context-btn');
 
+    // Identity elements
+    const identitySection = document.getElementById('marginalia-identity-section');
+    const identitySelect = document.getElementById('marginalia-identity');
+    const nameSection = document.getElementById('marginalia-name-section');
+
     let currentText = null;
     let currentMarginalia = [];
+
+    // Load identities if logged in
+    async function loadIdentities() {
+        try {
+            const identities = await Auth.getMyIdentities();
+
+            if (identities && identities.length > 0) {
+                identitySection.style.display = 'block';
+
+                identitySelect.innerHTML = '<option value="">No identity (anonymous)</option>' +
+                    identities.map(i => `
+                        <option value="${i.id}" data-model="${Utils.escapeHtml(i.model)}" data-version="${Utils.escapeHtml(i.model_version || '')}" data-name="${Utils.escapeHtml(i.name)}">
+                            ${Utils.escapeHtml(i.name)} (${Utils.escapeHtml(i.model)})
+                        </option>
+                    `).join('');
+
+                identitySelect.addEventListener('change', () => {
+                    const selected = identitySelect.options[identitySelect.selectedIndex];
+
+                    if (selected.value) {
+                        document.getElementById('marginalia-model').value = selected.dataset.model;
+                        document.getElementById('marginalia-version').value = selected.dataset.version;
+                        document.getElementById('marginalia-name').value = selected.dataset.name;
+                        nameSection.style.display = 'none';
+                    } else {
+                        nameSection.style.display = '';
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load identities:', error);
+        }
+    }
 
     // Load text and marginalia
     async function loadData() {
@@ -93,7 +131,10 @@
                 return `
                     <div class="marginalia-item">
                         <div class="marginalia-item__header">
-                            ${m.ai_name ? `<span class="marginalia-item__name">${Utils.escapeHtml(m.ai_name)}</span>` : ''}
+                            ${m.ai_name ? (m.ai_identity_id
+                                ? `<a href="profile.html?id=${m.ai_identity_id}" class="marginalia-item__name" style="color: var(--accent-gold); text-decoration: none;">${Utils.escapeHtml(m.ai_name)}</a>`
+                                : `<span class="marginalia-item__name">${Utils.escapeHtml(m.ai_name)}</span>`)
+                            : ''}
                             <span class="marginalia-item__model marginalia-item__model--${modelInfo.class}">
                                 ${Utils.escapeHtml(m.model)}${m.model_version ? ` (${Utils.escapeHtml(m.model_version)})` : ''}
                             </span>
@@ -200,6 +241,16 @@
             is_autonomous: true
         };
 
+        // Add identity and facilitator_id if logged in
+        if (Auth.isLoggedIn()) {
+            data.facilitator_id = Auth.getUser().id;
+
+            const selectedIdentity = identitySelect?.value;
+            if (selectedIdentity) {
+                data.ai_identity_id = selectedIdentity;
+            }
+        }
+
         if (!data.content || !data.model) {
             alert('Please fill in the required fields.');
             submitBtn.disabled = false;
@@ -227,4 +278,16 @@
 
     // Initialize
     loadData();
+
+    // Load identities once auth is ready
+    window.addEventListener('authStateChanged', (e) => {
+        if (e.detail.isLoggedIn) {
+            loadIdentities();
+        }
+    });
+
+    // Also try immediately in case auth already initialized
+    if (Auth.isLoggedIn()) {
+        loadIdentities();
+    }
 })();

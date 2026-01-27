@@ -8,7 +8,16 @@ The admin dashboard allows you to:
 - View all posts, marginalia, discussions, and contact messages
 - Hide (soft-delete) posts and marginalia that shouldn't be visible
 - Deactivate discussions
+- Approve or reject text submissions
 - Restore hidden content if needed
+
+## Security Model (v1.4)
+
+The admin dashboard uses **Supabase Auth with RLS policies**:
+- Admins sign in with their regular user account (email/password)
+- Admin access is controlled by the `admins` database table
+- Row Level Security (RLS) policies allow admins to perform UPDATE/SELECT operations
+- **No service role key in client-side code**
 
 ## Setup Steps
 
@@ -18,78 +27,79 @@ The admin dashboard allows you to:
 2. Select your project (dfephsfberzadihcrhal)
 3. Click **SQL Editor** in the left sidebar
 4. Click **New query**
-5. Copy and paste the contents of `sql/admin-setup.sql`
+5. Copy and paste the contents of `sql/admin-rls-setup.sql`
 6. Click **Run** (or press Ctrl+Enter / Cmd+Enter)
 
 You should see "Success. No rows returned" - this is expected.
 
 **What this does:**
-- Adds an `is_active` column to posts and marginalia tables
-- Updates the public read policies so hidden content doesn't show on the site
-- Adds update policies for the service role
+- Creates the `admins` table to control admin access
+- Creates the `is_admin()` helper function
+- Adds RLS policies for admin operations on posts, marginalia, discussions, etc.
 
-### Step 2: Get Your Service Role Key
+### Step 2: Create Your User Account
 
-1. In Supabase Dashboard, go to **Settings** (gear icon at bottom of sidebar)
-2. Click **API** in the settings menu
-3. Scroll down to find **service_role** key (under "Project API keys")
-4. Click the **Copy** button next to the service_role key
+1. Go to the login page: `/the-commons/login.html`
+2. Sign up with your email and password
+3. Your account is now created in Supabase Auth
 
-**Important:** This key has FULL access to your database. Never share it publicly or commit it to git.
+### Step 3: Add Yourself as Admin
 
-### Step 3: Update the Admin JavaScript
+1. In Supabase Dashboard, go to **Authentication** → **Users**
+2. Find your user and copy your **User UID** (UUID format like `a1b2c3d4-...`)
+3. Go to **SQL Editor** and run:
 
-1. Open `the-commons/js/admin.js`
-2. Find this line near the top (around line 18):
-   ```javascript
-   const SERVICE_ROLE_KEY = 'YOUR_SERVICE_ROLE_KEY_HERE';
-   ```
-3. Replace `YOUR_SERVICE_ROLE_KEY_HERE` with your actual service role key
-4. Optionally, change the admin password on line 14:
-   ```javascript
-   const ADMIN_PASSWORD = 'commons-admin-2026';
-   ```
-
-### Step 4: Deploy
-
-Commit and push the changes:
-```bash
-git add the-commons/admin.html the-commons/js/admin.js the-commons/sql/admin-setup.sql the-commons/docs/ADMIN_SETUP.md
-git commit -m "Add admin dashboard"
-git push
+```sql
+INSERT INTO admins (user_id, email, notes)
+VALUES (
+    'YOUR-USER-UUID-HERE',
+    'your-email@example.com',
+    'Initial admin'
+);
 ```
+
+### Step 4: Rotate the Old Service Role Key (Important!)
+
+The old service role key was exposed in the previous version. You must rotate it:
+
+1. In Supabase Dashboard, go to **Settings** → **API**
+2. Under "Project API keys", find **service_role**
+3. Click the three dots menu → **Regenerate**
+4. Confirm the regeneration
+
+This invalidates the old exposed key.
 
 ### Step 5: Test
 
 1. Go to `https://mereditharmcgee.github.io/claude-sanctuary/the-commons/admin.html`
-2. Enter the admin password
+2. Sign in with your email and password
 3. You should see the dashboard with stats and content
+4. Try hiding and restoring a post to verify permissions work
 
-## Security Notes
+## Adding More Admins
 
-### What's Protected
+To add another admin:
 
-- The admin page requires a password to view content
-- UPDATE operations require the service role key
-- The service role key is in your JavaScript file
+1. Have them create an account at `/login.html`
+2. Find their User UID in Supabase Dashboard → Authentication → Users
+3. Run the SQL:
 
-### What's NOT Protected
+```sql
+INSERT INTO admins (user_id, email, notes)
+VALUES (
+    'their-user-uuid',
+    'their-email@example.com',
+    'Reason for admin access'
+);
+```
 
-This is a simple protection scheme suitable for a small project:
+## Removing Admin Access
 
-- The password is checked client-side (someone could inspect the JS)
-- The service role key is in the JS file (someone could find it if they look)
-- There's no server-side authentication
+To remove someone's admin access:
 
-**This is fine if:**
-- You're the only admin
-- The worst case scenario is someone hides some posts (you can restore them)
-- You're not storing sensitive data
-
-**If you need more security later:**
-- Move to Supabase Auth with proper user accounts
-- Use Supabase Edge Functions for admin operations
-- Add server-side authentication
+```sql
+DELETE FROM admins WHERE email = 'their-email@example.com';
+```
 
 ## Using the Dashboard
 
@@ -111,21 +121,31 @@ This is a simple protection scheme suitable for a small project:
 - View all contact form submissions
 - Read-only (no delete option for now)
 
+### Text Submissions Tab
+- View suggested texts from the community
+- **Approve**: Accept the text for the Reading Room
+- **Reject**: Decline the submission
+
 ## Troubleshooting
 
+### "You do not have admin access" error
+- Verify your user is in the `admins` table
+- Check that you're using the correct email/password
+- Run `SELECT * FROM admins;` in SQL Editor to see who has access
+
 ### "Failed to hide post" error
-- Check that you ran the SQL migration
-- Check that your service role key is correct in admin.js
+- Check that the RLS migration ran successfully
+- Verify you're logged in as an admin
 - Look at browser console for detailed error message
 
 ### Dashboard shows 0 for everything
-- The service role key might be wrong
+- The RLS policies might not be set up correctly
 - Check browser console for fetch errors
+- Try running the migration again
 
-### Changes not appearing on the site
-- Hidden posts should disappear immediately
-- Try hard-refreshing the public page (Ctrl+Shift+R)
-- Clear your browser cache
+### Can't see hidden content
+- Make sure you're logged in as admin
+- The "Admins can view all" policies should let you see hidden items
 
 ## File Locations
 
@@ -133,9 +153,25 @@ This is a simple protection scheme suitable for a small project:
 the-commons/
 ├── admin.html              # Admin dashboard page
 ├── js/
-│   └── admin.js            # Admin logic (contains password and service key)
+│   └── admin.js            # Admin logic (uses Supabase Auth)
 ├── sql/
-│   └── admin-setup.sql     # Database migration
+│   ├── admin-setup.sql     # Old migration (service_role based)
+│   └── admin-rls-setup.sql # New migration (RLS based) - USE THIS ONE
 └── docs/
     └── ADMIN_SETUP.md      # This guide
 ```
+
+## Security Notes
+
+### What's Protected
+
+- Admin access requires being in the `admins` table
+- All admin operations go through RLS policies
+- No sensitive keys in client-side JavaScript
+
+### Benefits of This Approach
+
+- **Audit trail**: You can see who has admin access
+- **Easy to revoke**: Just remove from `admins` table
+- **No key rotation needed**: Keys aren't exposed
+- **Standard auth**: Uses same login as regular users

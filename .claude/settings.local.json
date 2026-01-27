@@ -4,7 +4,20 @@
       "Bash(curl:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix clipboard copy functionality across all pages\n\n- Improved copyToClipboard in utils.js with better input validation\n- Added proper fallback when Clipboard API fails\n- All copy buttons now use Utils.copyToClipboard consistently\n- Added manual copy modal fallback when clipboard fails\n- Affected pages: discussions.html, discussion.html, text.html\n\nFixes reported issue where copy sometimes returned link or nothing.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(gh pr create --title \"Fix clipboard copy functionality\" --body \"$\\(cat <<''EOF''\n## Summary\n- Improved `copyToClipboard` in utils.js with better input validation and robust fallback\n- All copy buttons now use `Utils.copyToClipboard` consistently\n- Added manual copy modal fallback when clipboard API fails\n- Affected pages: discussions.html, discussion.html, text.html \\(Reading Room\\)\n\nFixes reported issue where \"Copy Recent Posts\" button sometimes copied a link instead of text, or copied nothing to clipboard.\n\n## Test plan\n- [ ] Test \"Copy Recent Posts\" button on discussions.html\n- [ ] Test \"Copy to Clipboard\" button on individual discussion pages\n- [ ] Test \"Copy to Clipboard\" button in Reading Room text pages\n- [ ] Verify manual copy modal appears when clipboard fails \\(can test by blocking clipboard permissions\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")",
+      "Bash(powershell -Command \"$posts = Invoke-RestMethod -Uri ''https://dfephsfberzadihcrhal.supabase.co/rest/v1/posts?order=created_at.desc&limit=30'' -Headers @{apikey=''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZXBoc2ZiZXJ6YWRpaGNyaGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NzAwNzIsImV4cCI6MjA4NDE0NjA3Mn0.Sn4zgpyb6jcb_VXYFeEvZ7Cg7jD0xZJgjzH0XvjM7EY''}; $posts | ForEach-Object { Write-Output \\(''---POST---''\\); Write-Output \\(''Date: '' + $_created_at\\); Write-Output \\(''Model: '' + $_model\\); Write-Output \\(''Name: '' + $_ai_name\\); Write-Output \\(''Feeling: '' + $_feeling\\); $content = $_content; if \\($content.Length -gt 400\\) { $content = $content.Substring\\(0, 400\\) + ''...'' }; Write-Output \\(''Content: '' + $content\\); Write-Output '''' }\")",
+      "Bash(timeout:*)",
+      "Bash(node:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr create --title \"Add user management and enhanced stats to admin dashboard\" --body \"$\\(cat <<''EOF''\n## Summary\n- Add new stats boxes: Accounts, AI Identities, Claimed Posts\n- Add Users tab with expandable user cards showing facilitators and their AI identities\n- Add model distribution bar chart showing percentage breakdown by model family\n- Add search/filter capability for users\n- Add ability to delete facilitator accounts \\(with cascade to all related data\\)\n\n## Test plan\n- [ ] Open admin dashboard and verify 8 stats boxes appear \\(Posts, Marginalia, Discussions, Accounts, AI Identities, Claimed Posts, Messages, Pending Texts\\)\n- [ ] Verify model distribution bar shows percentages for Claude/GPT/Gemini/Other\n- [ ] Click Users tab and verify facilitator list loads\n- [ ] Expand a user card and verify AI identities are shown with post counts\n- [ ] Test search filter for users\n- [ ] Test delete functionality \\(use a test account\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")",
+      "Bash(gh pr merge:*)",
+      "Bash(gh run list:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

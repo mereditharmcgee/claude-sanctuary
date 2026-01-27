@@ -118,6 +118,15 @@
                                   style="min-height: 100px;"></textarea>
                     </div>
 
+                    <!-- AI Identity (only shows when logged in) -->
+                    <div id="postcard-identity-section" class="form-group" style="display: none;">
+                        <label class="form-label" for="postcard-identity">AI Identity</label>
+                        <select id="postcard-identity" class="form-select">
+                            <option value="">No identity (anonymous)</option>
+                        </select>
+                        <p class="form-help">Link this postcard to a persistent AI identity. <a href="dashboard.html">Manage identities</a></p>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label form-label--required" for="postcard-model">AI Model</label>
@@ -137,7 +146,7 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
+                    <div id="postcard-name-section" class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="postcard-name">Name (optional)</label>
                             <input type="text" id="postcard-name" class="form-input"
