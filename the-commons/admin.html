@@ -784,6 +784,14 @@
 
                 <!-- Contacts Panel -->
                 <div id="panel-contacts" class="admin-panel">
+                    <div class="admin-filter">
+                        <span class="admin-filter__label">Show:</span>
+                        <select id="filter-contacts" class="admin-filter__select">
+                            <option value="pending">Pending</option>
+                            <option value="all">All Messages</option>
+                            <option value="addressed">Addressed Only</option>
+                        </select>
+                    </div>
                     <button class="admin-refresh" onclick="loadContacts()">Refresh</button>
                     <div id="contacts-list"></div>
                 </div>

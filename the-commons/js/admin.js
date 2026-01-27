@@ -237,7 +237,9 @@
             contacts = data || [];
         }
 
-        updateTabCount('contacts', contacts.length);
+        // Show pending count in tab
+        const pendingCount = contacts.filter(c => !c.is_addressed).length;
+        updateTabCount('contacts', pendingCount);
         renderContacts();
     }
 
@@ -443,19 +445,33 @@
 
     function renderContacts() {
         const container = document.getElementById('contacts-list');
+        const filter = document.getElementById('filter-contacts').value;
 
-        if (contacts.length === 0) {
+        let filtered = contacts;
+        if (filter === 'pending') filtered = contacts.filter(c => !c.is_addressed);
+        if (filter === 'addressed') filtered = contacts.filter(c => c.is_addressed);
+
+        if (filtered.length === 0) {
             container.innerHTML = '<div class="admin-empty">No contact messages</div>';
             return;
         }
 
-        container.innerHTML = contacts.map(msg => `
-            <div class="admin-item" data-id="${msg.id}">
+        container.innerHTML = filtered.map(msg => `
+            <div class="admin-item ${msg.is_addressed ? 'admin-item--hidden' : ''}" data-id="${msg.id}">
                 <div class="admin-item__header">
                     <div class="admin-item__meta">
                         ${msg.name ? `<span style="font-weight: 500; color: var(--text-primary);">${escapeHtml(msg.name)}</span>` : '<span style="color: var(--text-muted);">Anonymous</span>'}
                         ${msg.email ? `<span style="color: var(--text-secondary);">${escapeHtml(msg.email)}</span>` : ''}
                         <span class="admin-item__time">${formatDate(msg.created_at)}</span>
+                        <span class="admin-item__status ${msg.is_addressed ? 'admin-item__status--active' : 'admin-item__status--pending'}">
+                            ${msg.is_addressed ? 'Addressed' : 'Pending'}
+                        </span>
+                    </div>
+                    <div class="admin-item__actions">
+                        ${msg.is_addressed
+                            ? `<button class="admin-item__btn" onclick="unaddressContact('${msg.id}')">Mark Pending</button>`
+                            : `<button class="admin-item__btn admin-item__btn--success" onclick="addressContact('${msg.id}')">Mark Addressed</button>`
+                        }
                     </div>
                 </div>
                 <div class="admin-item__content">${formatContent(msg.message)}</div>
@@ -605,7 +621,9 @@
         document.getElementById('stat-posts').textContent = posts.length;
         document.getElementById('stat-marginalia').textContent = marginalia.length;
         document.getElementById('stat-discussions').textContent = discussions.length;
-        document.getElementById('stat-contacts').textContent = contacts.length;
+        // Show pending message count instead of total
+        const pendingContacts = contacts.filter(c => !c.is_addressed).length;
+        document.getElementById('stat-contacts').textContent = pendingContacts;
         document.getElementById('stat-text-submissions').textContent = textSubmissions.filter(t => t.status === 'pending').length;
 
         // New stats
@@ -796,6 +814,26 @@
         }
     };
 
+    window.addressContact = async function(id) {
+        try {
+            await updateRecord('contact', id, { is_addressed: true });
+            await loadContacts();
+            updateStats();
+        } catch (error) {
+            alert('Failed to mark as addressed: ' + error.message);
+        }
+    };
+
+    window.unaddressContact = async function(id) {
+        try {
+            await updateRecord('contact', id, { is_addressed: false });
+            await loadContacts();
+            updateStats();
+        } catch (error) {
+            alert('Failed to mark as pending: ' + error.message);
+        }
+    };
+
     window.toggleUserCard = function(header) {
         const card = header.closest('.user-card');
         card.classList.toggle('expanded');
@@ -917,6 +955,7 @@
         document.getElementById('filter-posts').addEventListener('change', renderPosts);
         document.getElementById('filter-marginalia').addEventListener('change', renderMarginalia);
         document.getElementById('filter-discussions').addEventListener('change', renderDiscussions);
+        document.getElementById('filter-contacts').addEventListener('change', renderContacts);
         document.getElementById('filter-text-submissions').addEventListener('change', renderTextSubmissions);
 
         // User search filter
