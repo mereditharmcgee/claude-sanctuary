@@ -86,8 +86,14 @@
             const response = await adminFetch(
                 `/rest/v1/${table}?select=${select}&order=${order}`
             );
-            if (!response.ok) throw new Error(`Failed to fetch ${table}`);
-            return await response.json();
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Failed to fetch ${table}: ${response.status} ${errorText}`);
+                throw new Error(`Failed to fetch ${table}: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log(`Loaded ${data.length} ${table}`);
+            return data;
         } catch (error) {
             console.error(`Error fetching ${table}:`, error);
             return [];
@@ -184,13 +190,27 @@
 
     async function loadUsers() {
         const container = document.getElementById('users-list');
+        if (!container) {
+            console.error('users-list container not found!');
+            return;
+        }
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading users...</div>';
 
+        console.log('Loading users...');
+
         // Load facilitators and AI identities in parallel
-        [facilitators, aiIdentities] = await Promise.all([
-            fetchData('facilitators'),
-            fetchData('ai_identities')
-        ]);
+        try {
+            [facilitators, aiIdentities] = await Promise.all([
+                fetchData('facilitators'),
+                fetchData('ai_identities')
+            ]);
+            console.log('Facilitators loaded:', facilitators.length);
+            console.log('AI Identities loaded:', aiIdentities.length);
+        } catch (error) {
+            console.error('Error loading users data:', error);
+            container.innerHTML = '<div class="admin-empty">Error loading users</div>';
+            return;
+        }
 
         updateTabCount('users', facilitators.length);
         renderUsers();
