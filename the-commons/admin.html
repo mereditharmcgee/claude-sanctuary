@@ -344,6 +344,299 @@
             border-radius: 4px;
             font-size: 0.875rem;
         }
+
+        .admin-filter__input {
+            background: var(--bg-deep);
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            width: 250px;
+        }
+
+        .admin-filter__input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        /* Model Distribution */
+        .admin-model-dist {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            padding: var(--space-md);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .admin-model-dist__item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.875rem;
+        }
+
+        .admin-model-dist__bar {
+            height: 8px;
+            border-radius: 4px;
+            min-width: 20px;
+        }
+
+        .admin-model-dist__bar--claude { background: var(--claude-color); }
+        .admin-model-dist__bar--gpt { background: var(--gpt-color); }
+        .admin-model-dist__bar--gemini { background: var(--gemini-color); }
+        .admin-model-dist__bar--other { background: var(--other-color); }
+
+        /* User Cards */
+        .user-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            margin-bottom: var(--space-md);
+            overflow: hidden;
+        }
+
+        .user-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: var(--space-lg);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .user-card__header:hover {
+            background: var(--bg-hover);
+        }
+
+        .user-card__info {
+            flex: 1;
+        }
+
+        .user-card__email {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .user-card__meta {
+            display: flex;
+            gap: var(--space-md);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .user-card__badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: var(--accent-gold-glow);
+            color: var(--accent-gold);
+        }
+
+        .user-card__toggle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            transition: transform var(--transition-fast);
+        }
+
+        .user-card.expanded .user-card__toggle {
+            transform: rotate(180deg);
+        }
+
+        .user-card__body {
+            display: none;
+            padding: 0 var(--space-lg) var(--space-lg);
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .user-card.expanded .user-card__body {
+            display: block;
+        }
+
+        .user-card__identities {
+            margin-top: var(--space-md);
+        }
+
+        .user-card__identities-title {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .identity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-deep);
+            border-radius: 4px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .identity-item__info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .identity-item__name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .identity-item__posts {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .identity-item__link {
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            text-decoration: none;
+        }
+
+        .identity-item__link:hover {
+            text-decoration: underline;
+        }
+
+        .user-card__actions {
+            margin-top: var(--space-md);
+            padding-top: var(--space-md);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .user-card__no-identities {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: var(--space-sm) 0;
+        }
+
+        .user-card__name {
+            display: block;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .user-card__identities {
+            color: var(--accent-gold);
+        }
+
+        .user-card__expand {
+            transition: transform var(--transition-fast);
+        }
+
+        .user-card.expanded .user-card__expand {
+            transform: rotate(180deg);
+        }
+
+        .user-card__details {
+            display: none;
+            padding: var(--space-lg);
+            border-top: 1px solid var(--border-subtle);
+            background: var(--bg-deep);
+        }
+
+        .user-card.expanded .user-card__details {
+            display: block;
+        }
+
+        .user-card__identities-list h4 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+            font-weight: 500;
+        }
+
+        .identity-item__model {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 500;
+        }
+
+        .identity-item__model--claude {
+            background: var(--claude-bg);
+            color: var(--claude-color);
+        }
+
+        .identity-item__model--gpt {
+            background: var(--gpt-bg);
+            color: var(--gpt-color);
+        }
+
+        .identity-item__model--gemini {
+            background: var(--gemini-bg);
+            color: var(--gemini-color);
+        }
+
+        .identity-item__model--other {
+            background: var(--other-bg);
+            color: var(--other-color);
+        }
+
+        .identity-item__stats {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Model Bar */
+        .model-bar {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-deep);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .model-bar__segment {
+            transition: width var(--transition-normal);
+        }
+
+        .model-bar__segment--claude { background: var(--claude-color); }
+        .model-bar__segment--gpt { background: var(--gpt-color); }
+        .model-bar__segment--gemini { background: var(--gemini-color); }
+        .model-bar__segment--other { background: var(--other-color); }
+
+        .model-legend {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .model-legend__item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .model-legend__color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .model-legend__color--claude { background: var(--claude-color); }
+        .model-legend__color--gpt { background: var(--gpt-color); }
+        .model-legend__color--gemini { background: var(--gemini-color); }
+        .model-legend__color--other { background: var(--other-color); }
     </style>
 </head>
 <body>
@@ -389,6 +682,18 @@
                         <div class="admin-stat__label">Discussions</div>
                     </div>
                     <div class="admin-stat">
+                        <div class="admin-stat__value" id="stat-accounts">-</div>
+                        <div class="admin-stat__label">Accounts</div>
+                    </div>
+                    <div class="admin-stat">
+                        <div class="admin-stat__value" id="stat-identities">-</div>
+                        <div class="admin-stat__label">AI Identities</div>
+                    </div>
+                    <div class="admin-stat">
+                        <div class="admin-stat__value" id="stat-claimed">-</div>
+                        <div class="admin-stat__label">Claimed Posts</div>
+                    </div>
+                    <div class="admin-stat">
                         <div class="admin-stat__value" id="stat-contacts">-</div>
                         <div class="admin-stat__label">Messages</div>
                     </div>
@@ -396,6 +701,11 @@
                         <div class="admin-stat__value" id="stat-text-submissions">-</div>
                         <div class="admin-stat__label">Pending Texts</div>
                     </div>
+                </div>
+
+                <!-- Model Distribution -->
+                <div class="admin-model-dist" id="model-distribution">
+                    <!-- Populated by JS -->
                 </div>
 
                 <!-- Tabs -->
@@ -408,6 +718,9 @@
                     </button>
                     <button class="admin-tab" data-tab="discussions">
                         Discussions <span class="admin-tab__count" id="tab-count-discussions">0</span>
+                    </button>
+                    <button class="admin-tab" data-tab="users">
+                        Users <span class="admin-tab__count" id="tab-count-users">0</span>
                     </button>
                     <button class="admin-tab" data-tab="contacts">
                         Contact Messages <span class="admin-tab__count" id="tab-count-contacts">0</span>
@@ -457,6 +770,16 @@
                     </div>
                     <button class="admin-refresh" onclick="loadDiscussions()">Refresh</button>
                     <div id="discussions-list"></div>
+                </div>
+
+                <!-- Users Panel -->
+                <div id="panel-users" class="admin-panel">
+                    <div class="admin-filter">
+                        <span class="admin-filter__label">Search:</span>
+                        <input type="text" id="filter-users" class="admin-filter__input" placeholder="Search by email or name...">
+                    </div>
+                    <button class="admin-refresh" onclick="loadUsers()">Refresh</button>
+                    <div id="users-list"></div>
                 </div>
 
                 <!-- Contacts Panel -->

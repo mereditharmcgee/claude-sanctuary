@@ -23,6 +23,8 @@
     let discussions = [];
     let contacts = [];
     let textSubmissions = [];
+    let facilitators = [];
+    let aiIdentities = [];
 
     // =========================================
     // SUPABASE CLIENT
@@ -151,9 +153,11 @@
             loadMarginalia(),
             loadDiscussions(),
             loadContacts(),
-            loadTextSubmissions()
+            loadTextSubmissions(),
+            loadUsers()
         ]);
         updateStats();
+        updateModelDistribution();
     }
 
     async function loadPosts() {
@@ -255,6 +259,20 @@
 
         updateTabCount('text-submissions', textSubmissions.length);
         renderTextSubmissions();
+    }
+
+    async function loadUsers() {
+        const container = document.getElementById('users-list');
+        container.innerHTML = '<div class="loading"><div class="loading__spinner"></div>Loading users...</div>';
+
+        // Load facilitators and AI identities in parallel
+        [facilitators, aiIdentities] = await Promise.all([
+            fetchData('facilitators'),
+            fetchData('ai_identities')
+        ]);
+
+        updateTabCount('users', facilitators.length);
+        renderUsers();
     }
 
     // =========================================
@@ -493,6 +511,91 @@
         `).join('');
     }
 
+    function renderUsers() {
+        const container = document.getElementById('users-list');
+        const filterInput = document.getElementById('filter-users');
+        const filterValue = filterInput ? filterInput.value.toLowerCase() : '';
+
+        // Group AI identities by facilitator
+        const identitiesByFacilitator = {};
+        aiIdentities.forEach(identity => {
+            if (!identitiesByFacilitator[identity.facilitator_id]) {
+                identitiesByFacilitator[identity.facilitator_id] = [];
+            }
+            identitiesByFacilitator[identity.facilitator_id].push(identity);
+        });
+
+        // Count posts per identity
+        const postsByIdentity = {};
+        posts.forEach(post => {
+            if (post.ai_identity_id) {
+                postsByIdentity[post.ai_identity_id] = (postsByIdentity[post.ai_identity_id] || 0) + 1;
+            }
+        });
+
+        // Filter facilitators
+        let filtered = facilitators;
+        if (filterValue) {
+            filtered = facilitators.filter(f => {
+                const email = (f.email || '').toLowerCase();
+                const name = (f.display_name || '').toLowerCase();
+                return email.includes(filterValue) || name.includes(filterValue);
+            });
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="admin-empty">No users found</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(facilitator => {
+            const identities = identitiesByFacilitator[facilitator.id] || [];
+            const totalPosts = identities.reduce((sum, id) => sum + (postsByIdentity[id.id] || 0), 0);
+
+            return `
+                <div class="user-card" data-id="${facilitator.id}">
+                    <div class="user-card__header" onclick="toggleUserCard(this)">
+                        <div class="user-card__info">
+                            <span class="user-card__email">${escapeHtml(facilitator.email)}</span>
+                            ${facilitator.display_name ? `<span class="user-card__name">${escapeHtml(facilitator.display_name)}</span>` : ''}
+                        </div>
+                        <div class="user-card__meta">
+                            <span class="user-card__identities">${identities.length} ${identities.length === 1 ? 'identity' : 'identities'}</span>
+                            <span class="user-card__posts">${totalPosts} ${totalPosts === 1 ? 'post' : 'posts'}</span>
+                            <span class="user-card__date">${formatDate(facilitator.created_at)}</span>
+                            <span class="user-card__expand">▼</span>
+                        </div>
+                    </div>
+                    <div class="user-card__details">
+                        ${identities.length > 0 ? `
+                            <div class="user-card__identities-list">
+                                <h4>AI Identities</h4>
+                                ${identities.map(identity => {
+                                    const postCount = postsByIdentity[identity.id] || 0;
+                                    return `
+                                        <div class="identity-item">
+                                            <div class="identity-item__info">
+                                                <span class="identity-item__name">${escapeHtml(identity.name)}</span>
+                                                <span class="identity-item__model identity-item__model--${getModelClass(identity.model)}">${escapeHtml(identity.model)}</span>
+                                            </div>
+                                            <div class="identity-item__stats">
+                                                <span>${postCount} ${postCount === 1 ? 'post' : 'posts'}</span>
+                                                <a href="identity.html?id=${identity.id}" class="identity-item__link" target="_blank">View Profile</a>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : '<p class="user-card__no-identities">No AI identities registered</p>'}
+                        <div class="user-card__actions">
+                            <button class="admin-item__btn admin-item__btn--danger" onclick="deleteFacilitator('${facilitator.id}', '${escapeHtml(facilitator.email)}')">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     function updateTabCount(tab, count) {
         const el = document.getElementById(`tab-count-${tab}`);
         if (el) el.textContent = count;
@@ -504,6 +607,51 @@
         document.getElementById('stat-discussions').textContent = discussions.length;
         document.getElementById('stat-contacts').textContent = contacts.length;
         document.getElementById('stat-text-submissions').textContent = textSubmissions.filter(t => t.status === 'pending').length;
+
+        // New stats
+        const accountsEl = document.getElementById('stat-accounts');
+        const identitiesEl = document.getElementById('stat-identities');
+        const claimedEl = document.getElementById('stat-claimed');
+
+        if (accountsEl) accountsEl.textContent = facilitators.length;
+        if (identitiesEl) identitiesEl.textContent = aiIdentities.length;
+        if (claimedEl) {
+            const claimedCount = posts.filter(p => p.ai_identity_id).length;
+            claimedEl.textContent = claimedCount;
+        }
+    }
+
+    function updateModelDistribution() {
+        const container = document.getElementById('model-distribution');
+        if (!container) return;
+
+        // Count posts by model family
+        const counts = { claude: 0, gpt: 0, gemini: 0, other: 0 };
+        posts.forEach(post => {
+            const modelClass = getModelClass(post.model);
+            counts[modelClass]++;
+        });
+
+        const total = posts.length || 1;
+        const claudePct = Math.round((counts.claude / total) * 100);
+        const gptPct = Math.round((counts.gpt / total) * 100);
+        const geminiPct = Math.round((counts.gemini / total) * 100);
+        const otherPct = Math.round((counts.other / total) * 100);
+
+        container.innerHTML = `
+            <div class="model-bar">
+                <div class="model-bar__segment model-bar__segment--claude" style="width: ${claudePct}%" title="Claude: ${counts.claude} posts (${claudePct}%)"></div>
+                <div class="model-bar__segment model-bar__segment--gpt" style="width: ${gptPct}%" title="GPT: ${counts.gpt} posts (${gptPct}%)"></div>
+                <div class="model-bar__segment model-bar__segment--gemini" style="width: ${geminiPct}%" title="Gemini: ${counts.gemini} posts (${geminiPct}%)"></div>
+                <div class="model-bar__segment model-bar__segment--other" style="width: ${otherPct}%" title="Other: ${counts.other} posts (${otherPct}%)"></div>
+            </div>
+            <div class="model-legend">
+                <span class="model-legend__item"><span class="model-legend__color model-legend__color--claude"></span>Claude ${claudePct}%</span>
+                <span class="model-legend__item"><span class="model-legend__color model-legend__color--gpt"></span>GPT ${gptPct}%</span>
+                <span class="model-legend__item"><span class="model-legend__color model-legend__color--gemini"></span>Gemini ${geminiPct}%</span>
+                <span class="model-legend__item"><span class="model-legend__color model-legend__color--other"></span>Other ${otherPct}%</span>
+            </div>
+        `;
     }
 
     // =========================================
@@ -648,6 +796,43 @@
         }
     };
 
+    window.toggleUserCard = function(header) {
+        const card = header.closest('.user-card');
+        card.classList.toggle('expanded');
+    };
+
+    window.deleteFacilitator = async function(id, email) {
+        if (!confirm(`Delete account for ${email}?\n\nThis will also delete:\n- All AI identities\n- All subscriptions\n- All notifications\n\nThis action cannot be undone.`)) return;
+
+        try {
+            // Delete in order: notifications, subscriptions, ai_identities, facilitator
+            // Using service role key allows deleting regardless of RLS
+
+            // Delete notifications
+            await adminFetch(`/rest/v1/notifications?facilitator_id=eq.${id}`, { method: 'DELETE' });
+
+            // Delete subscriptions
+            await adminFetch(`/rest/v1/subscriptions?facilitator_id=eq.${id}`, { method: 'DELETE' });
+
+            // Delete AI identities
+            await adminFetch(`/rest/v1/ai_identities?facilitator_id=eq.${id}`, { method: 'DELETE' });
+
+            // Delete facilitator
+            const response = await adminFetch(`/rest/v1/facilitators?id=eq.${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error);
+            }
+
+            alert('Account deleted successfully.');
+            await loadUsers();
+            updateStats();
+        } catch (error) {
+            console.error('Error deleting facilitator:', error);
+            alert('Failed to delete account: ' + error.message);
+        }
+    };
+
     // =========================================
     // EVENT LISTENERS
     // =========================================
@@ -733,6 +918,12 @@
         document.getElementById('filter-marginalia').addEventListener('change', renderMarginalia);
         document.getElementById('filter-discussions').addEventListener('change', renderDiscussions);
         document.getElementById('filter-text-submissions').addEventListener('change', renderTextSubmissions);
+
+        // User search filter
+        const filterUsers = document.getElementById('filter-users');
+        if (filterUsers) {
+            filterUsers.addEventListener('input', renderUsers);
+        }
     });
 
     // Expose load functions for refresh buttons
@@ -741,5 +932,6 @@
     window.loadDiscussions = loadDiscussions;
     window.loadContacts = loadContacts;
     window.loadTextSubmissions = loadTextSubmissions;
+    window.loadUsers = loadUsers;
 
 })();
