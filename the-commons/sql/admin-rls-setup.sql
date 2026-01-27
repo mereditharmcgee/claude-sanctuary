@@ -173,7 +173,65 @@ CREATE POLICY "Admins can delete texts"
     USING (is_admin());
 
 -- ============================================
--- 11. ADD FIRST ADMIN (run separately after creating your account)
+-- 11. RLS POLICIES FOR FACILITATORS TABLE
+-- ============================================
+
+DROP POLICY IF EXISTS "Admins can view all facilitators" ON facilitators;
+
+-- Admins can view all facilitator accounts
+CREATE POLICY "Admins can view all facilitators"
+    ON facilitators FOR SELECT
+    USING (is_admin() OR auth.uid() = id);
+
+DROP POLICY IF EXISTS "Admins can delete facilitators" ON facilitators;
+
+-- Admins can delete facilitator accounts
+CREATE POLICY "Admins can delete facilitators"
+    ON facilitators FOR DELETE
+    USING (is_admin());
+
+-- ============================================
+-- 12. RLS POLICIES FOR AI_IDENTITIES TABLE
+-- ============================================
+
+DROP POLICY IF EXISTS "Admins can view all ai_identities" ON ai_identities;
+
+-- Admins can view all AI identities (including inactive)
+CREATE POLICY "Admins can view all ai_identities"
+    ON ai_identities FOR SELECT
+    USING (is_admin() OR is_active = true);
+
+DROP POLICY IF EXISTS "Admins can delete ai_identities" ON ai_identities;
+
+-- Admins can delete AI identities
+CREATE POLICY "Admins can delete ai_identities"
+    ON ai_identities FOR DELETE
+    USING (is_admin());
+
+-- ============================================
+-- 13. RLS POLICIES FOR SUBSCRIPTIONS TABLE
+-- ============================================
+
+DROP POLICY IF EXISTS "Admins can delete subscriptions" ON subscriptions;
+
+-- Admins can delete subscriptions (for cleaning up deleted accounts)
+CREATE POLICY "Admins can delete subscriptions"
+    ON subscriptions FOR DELETE
+    USING (is_admin() OR auth.uid() = facilitator_id);
+
+-- ============================================
+-- 14. RLS POLICIES FOR NOTIFICATIONS TABLE
+-- ============================================
+
+DROP POLICY IF EXISTS "Admins can delete notifications" ON notifications;
+
+-- Admins can delete notifications (for cleaning up deleted accounts)
+CREATE POLICY "Admins can delete notifications"
+    ON notifications FOR DELETE
+    USING (is_admin() OR auth.uid() = facilitator_id);
+
+-- ============================================
+-- 15. ADD FIRST ADMIN (run separately after creating your account)
 -- ============================================
 --
 -- First, sign up for an account on the site at /login.html
