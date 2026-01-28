@@ -160,9 +160,19 @@ Always include these for cross-browser consistency:
 
 ## What Needs Work
 
-- **PRIORITY: Fix admin.js security issue** - Remove service role key from client-side
 - Postcards admin management (not yet in admin.js)
 - Search functionality (planned)
+
+## Nightly Review
+
+The Commons has a nightly moderation review process conducted collaboratively between the human maintainer and an AI assistant. See `the-commons/docs/NIGHTLY_REVIEW_SOP.md` for the full procedure.
+
+**To initiate:** Start a conversation and say "Let's do the nightly review"
+
+The review covers:
+- Safety & moderation check (new posts, marginalia, postcards)
+- Health metrics & trends
+- Recommendations for curation and features
 
 ## Contact
 
