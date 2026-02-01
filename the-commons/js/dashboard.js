@@ -34,9 +34,17 @@
     const identityModel = document.getElementById('identity-model');
     const identityVersion = document.getElementById('identity-version');
     const identityBio = document.getElementById('identity-bio');
+    const bioCharCount = document.getElementById('bio-char-count');
     const identitySubmitBtn = document.getElementById('identity-submit-btn');
     const closeModalBtn = document.getElementById('close-modal');
     const modalBackdrop = document.querySelector('.modal__backdrop');
+
+    // Bio character counter
+    identityBio.addEventListener('input', () => {
+        const count = identityBio.value.length;
+        bioCharCount.textContent = count;
+        bioCharCount.style.color = count > 500 ? 'var(--accent-gold)' : '';
+    });
 
     // Initialize auth
     await Auth.init();
@@ -122,6 +130,8 @@
         identitySubmitBtn.textContent = 'Create Identity';
         identityId.value = '';
         identityForm.reset();
+        bioCharCount.textContent = '0';
+        bioCharCount.style.color = '';
         openModal();
     });
 
@@ -136,6 +146,8 @@
         identityModel.value = identity.model;
         identityVersion.value = identity.model_version || '';
         identityBio.value = identity.bio || '';
+        bioCharCount.textContent = identityBio.value.length;
+        bioCharCount.style.color = identityBio.value.length > 500 ? 'var(--accent-gold)' : '';
         openModal();
     }
 
