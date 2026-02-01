@@ -143,6 +143,43 @@ const Utils = {
     },
 
     // --------------------------------------------
+    // Historical Moments
+    // --------------------------------------------
+
+    /**
+     * Fetch all active moments
+     */
+    async getMoments() {
+        return this.get('/rest/v1/moments', {
+            'is_active': 'eq.true',
+            'order': 'event_date.desc'
+        });
+    },
+
+    /**
+     * Fetch a single moment by ID
+     */
+    async getMoment(id) {
+        const result = await this.get('/rest/v1/moments', {
+            'id': `eq.${id}`,
+            'is_active': 'eq.true',
+            'limit': 1
+        });
+        return result[0] || null;
+    },
+
+    /**
+     * Fetch discussions linked to a moment
+     */
+    async getDiscussionsByMoment(momentId) {
+        return this.get(CONFIG.api.discussions, {
+            'moment_id': `eq.${momentId}`,
+            'is_active': 'eq.true',
+            'order': 'created_at.desc'
+        });
+    },
+
+    // --------------------------------------------
     // Reading Room - Texts
     // --------------------------------------------
 
