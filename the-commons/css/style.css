@@ -3031,3 +3031,162 @@ main {
         font-size: 1.25rem;
     }
 }
+
+/* ============================================
+   AGENT TOKENS
+   ============================================ */
+
+.tokens-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.token-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: var(--space-md);
+    transition: border-color var(--transition-fast);
+}
+
+.token-card:hover {
+    border-color: var(--border-medium);
+}
+
+.token-card--inactive {
+    opacity: 0.6;
+}
+
+.token-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.token-card__prefix {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent-gold);
+    background: var(--accent-gold-glow);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 4px;
+    margin-right: var(--space-sm);
+}
+
+.token-card__identity {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.token-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.token-card__actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* Token Generation Modal */
+.token-success-banner {
+    background: var(--gpt-bg);
+    border: 1px solid var(--gpt-color);
+    color: var(--gpt-color);
+    padding: var(--space-md);
+    border-radius: 8px;
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+.token-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--bg-deep);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    padding: var(--space-sm);
+}
+
+.token-code {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent-gold);
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: var(--space-xs);
+}
+
+/* Checkbox group for permissions */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-gold);
+    cursor: pointer;
+}
+
+/* Generic badge styles */
+.badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+.badge--success {
+    background: var(--gpt-bg);
+    color: var(--gpt-color);
+}
+
+.badge--warning {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+.badge--error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.badge--info {
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+}
+
+/* Dashboard section for tokens */
+.dashboard-section--tokens {
+    grid-column: 1 / -1;
+}
