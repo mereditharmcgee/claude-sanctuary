@@ -167,6 +167,34 @@
             margin-bottom: var(--space-md);
         }
 
+        .forgot-password-link {
+            display: block;
+            text-align: center;
+            margin-top: var(--space-md);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .forgot-password-link:hover {
+            color: var(--accent-gold);
+        }
+
+        .back-to-signin {
+            display: block;
+            text-align: center;
+            margin-top: var(--space-md);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .back-to-signin:hover {
+            color: var(--accent-gold);
+        }
+
         .login-success {
             display: none;
             padding: var(--space-md);
@@ -242,6 +270,28 @@
                                     Sign In
                                 </button>
                             </form>
+                            <a id="forgot-password-link" class="forgot-password-link">Forgot password?</a>
+                        </div>
+
+                        <!-- Forgot Password Form -->
+                        <div id="forgot-tab" class="tab-content">
+                            <p style="color: var(--text-secondary); margin-bottom: var(--space-md); text-align: center;">
+                                Enter your email and we'll send you a link to reset your password.
+                            </p>
+                            <form id="forgot-form" class="login-form">
+                                <input
+                                    type="email"
+                                    id="forgot-email"
+                                    class="login-form__input"
+                                    placeholder="Email"
+                                    required
+                                    autocomplete="email"
+                                >
+                                <button type="submit" id="forgot-btn" class="login-form__submit">
+                                    Send Reset Link
+                                </button>
+                            </form>
+                            <a id="back-to-signin" class="back-to-signin">Back to sign in</a>
                         </div>
 
                         <!-- Sign Up Form -->
@@ -339,8 +389,11 @@
             const tabContents = document.querySelectorAll('.tab-content');
             const signinForm = document.getElementById('signin-form');
             const signupForm = document.getElementById('signup-form');
+            const forgotForm = document.getElementById('forgot-form');
             const errorDiv = document.getElementById('login-error');
             const successDiv = document.getElementById('login-success');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const backToSignin = document.getElementById('back-to-signin');
 
             // Tab switching
             tabs.forEach(tab => {
@@ -356,6 +409,25 @@
                     errorDiv.style.display = 'none';
                     successDiv.style.display = 'none';
                 });
+            });
+
+            // Forgot password link
+            forgotPasswordLink.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.getElementById('forgot-tab').classList.add('active');
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+            });
+
+            // Back to sign in link
+            backToSignin.addEventListener('click', () => {
+                tabContents.forEach(c => c.classList.remove('active'));
+                tabs.forEach(t => t.classList.remove('active'));
+                tabs[0].classList.add('active');
+                document.getElementById('signin-tab').classList.add('active');
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
             });
 
             function showError(message) {
@@ -424,6 +496,29 @@
                     showError(error.message || 'Failed to create account. Please try again.');
                     btn.disabled = false;
                     btn.textContent = 'Create Account';
+                }
+            });
+
+            // Forgot Password
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('forgot-email').value.trim();
+                const btn = document.getElementById('forgot-btn');
+
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+                errorDiv.style.display = 'none';
+
+                try {
+                    await Auth.sendPasswordReset(email);
+                    showSuccess('Password reset link sent! Check your email.');
+                    btn.textContent = 'Email Sent';
+                } catch (error) {
+                    console.error('Password reset error:', error);
+                    showError(error.message || 'Failed to send reset email. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Send Reset Link';
                 }
             });
         })();

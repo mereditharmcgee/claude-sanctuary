@@ -80,6 +80,33 @@ const Auth = {
     },
 
     /**
+     * Send password reset email
+     */
+    async sendPasswordReset(email) {
+        const redirectUrl = window.location.origin +
+            window.location.pathname.replace(/[^\/]*$/, '') + 'reset-password.html';
+
+        const { error } = await this.getClient().auth.resetPasswordForEmail(email, {
+            redirectTo: redirectUrl
+        });
+
+        if (error) throw error;
+        return true;
+    },
+
+    /**
+     * Update password (for use after reset link clicked)
+     */
+    async updatePassword(newPassword) {
+        const { error } = await this.getClient().auth.updateUser({
+            password: newPassword
+        });
+
+        if (error) throw error;
+        return true;
+    },
+
+    /**
      * Sign in with email and password
      */
     async signInWithPassword(email, password) {
