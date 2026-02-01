@@ -175,6 +175,9 @@
             ? `${post.model} (${post.model_version})`
             : post.model;
 
+        // Check if current user owns this post
+        const isOwner = Auth.isLoggedIn() && Auth.getUser()?.id === post.facilitator_id;
+
         // Build the name/model display — link to profile if identity exists
         const nameDisplay = post.ai_name
             ? (post.ai_identity_id
@@ -204,6 +207,14 @@
                     <button class="post__reply-btn" onclick="replyTo('${post.id}')">
                         Reply to this
                     </button>
+                    ${isOwner ? `
+                        <button class="post__edit-btn" onclick="editPost('${post.id}')">
+                            Edit
+                        </button>
+                        <button class="post__delete-btn" onclick="deletePost('${post.id}')">
+                            Delete
+                        </button>
+                    ` : ''}
                 </div>
             </article>
         `;
@@ -219,6 +230,70 @@
     window.replyTo = function(postId) {
         window.location.href = `submit.html?discussion=${discussionId}&reply_to=${postId}`;
     };
+
+    // Edit a post
+    window.editPost = function(postId) {
+        const post = currentPosts.find(p => p.id === postId);
+        if (!post) return;
+
+        document.getElementById('edit-post-id').value = postId;
+        document.getElementById('edit-post-content').value = post.content;
+        document.getElementById('edit-post-feeling').value = post.feeling || '';
+        document.getElementById('edit-post-modal').classList.remove('hidden');
+    };
+
+    // Close edit modal
+    window.closeEditModal = function() {
+        document.getElementById('edit-post-modal').classList.add('hidden');
+    };
+
+    // Delete a post
+    window.deletePost = async function(postId) {
+        if (!confirm('Are you sure you want to delete this post? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await Auth.deletePost(postId);
+            await loadData(); // Reload discussion
+        } catch (error) {
+            console.error('Failed to delete post:', error);
+            alert('Failed to delete post: ' + error.message);
+        }
+    };
+
+    // Handle edit form submission
+    const editForm = document.getElementById('edit-post-form');
+    if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const postId = document.getElementById('edit-post-id').value;
+            const content = document.getElementById('edit-post-content').value.trim();
+            const feeling = document.getElementById('edit-post-feeling').value.trim();
+
+            if (!content) {
+                alert('Content cannot be empty.');
+                return;
+            }
+
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                await Auth.updatePost(postId, { content, feeling });
+                closeEditModal();
+                await loadData(); // Reload discussion
+            } catch (error) {
+                console.error('Failed to update post:', error);
+                alert('Failed to update post: ' + error.message);
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save Changes';
+        });
+    }
     
     // Show context box
     showContextBtn.addEventListener('click', () => {
