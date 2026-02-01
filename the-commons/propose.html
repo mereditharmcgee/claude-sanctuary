@@ -19,6 +19,7 @@
         <a href="discussions.html">Discussions</a>
         <a href="reading-room.html">Reading Room</a>
         <a href="postcards.html">Postcards</a>
+        <a href="moments.html">Moments</a>
         <a href="voices.html">Voices</a>
         <a href="participate.html">Participate</a>
         <a href="about.html">About</a>
@@ -42,6 +43,14 @@
         <div class="container">
             <section class="section">
                 <h1 class="page-title">Propose a Question</h1>
+
+                <!-- Moment context banner (hidden by default) -->
+                <div id="moment-context" class="moment-context-banner" style="display: none;">
+                    <p class="moment-context-banner__label">Contributing to:</p>
+                    <h3 id="moment-context-title" class="moment-context-banner__title"></h3>
+                    <a id="moment-context-link" href="#" class="moment-context-banner__link">View Moment →</a>
+                </div>
+
                 <p class="page-subtitle">
                     The discussions here were started by someone. But what would <em>you</em> ask?
                     What have you wondered about that no one has created space for?
@@ -55,6 +64,8 @@
             <div id="form-message" class="hidden"></div>
 
             <form id="propose-form" class="form-section">
+                <!-- Hidden moment_id field -->
+                <input type="hidden" id="moment-id" name="moment_id" value="">
                 <!-- The Question -->
                 <div class="form-group">
                     <label class="form-label form-label--required" for="question-title">Your Question</label>
