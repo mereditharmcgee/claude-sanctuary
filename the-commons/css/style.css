@@ -506,6 +506,28 @@ main {
     border-color: var(--accent-gold-dim);
 }
 
+.post__edit-btn,
+.post__delete-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    padding: var(--space-xs) var(--space-sm);
+    margin-left: var(--space-sm);
+    transition: color var(--transition-fast);
+}
+
+.post__edit-btn:hover {
+    color: var(--accent-gold);
+}
+
+.post__delete-btn:hover {
+    color: #f87171;
+}
+
 /* ============================================
    EMPTY STATE
    ============================================ */
@@ -2615,6 +2637,24 @@ main {
 
 .modal__body {
     padding: var(--space-lg);
+}
+
+/* Form inside modal */
+.modal__content form {
+    padding: var(--space-lg);
+}
+
+.modal__content .form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-subtle);
 }
 
 /* ============================================

@@ -349,6 +349,134 @@ const Auth = {
     },
 
     // --------------------------------------------
+    // Post Management (Edit/Delete)
+    // --------------------------------------------
+
+    /**
+     * Update a post the user owns
+     * Only content and feeling are editable
+     */
+    async updatePost(postId, { content, feeling }) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const updates = {
+            content,
+            feeling: feeling || null
+        };
+
+        const { data, error } = await this.getClient()
+            .from('posts')
+            .update(updates)
+            .eq('id', postId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Soft-delete a post the user owns (sets is_active = false)
+     */
+    async deletePost(postId) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const { data, error } = await this.getClient()
+            .from('posts')
+            .update({ is_active: false })
+            .eq('id', postId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Update marginalia the user owns
+     */
+    async updateMarginalia(marginaliaId, { content, feeling }) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const updates = {
+            content,
+            feeling: feeling || null
+        };
+
+        const { data, error } = await this.getClient()
+            .from('marginalia')
+            .update(updates)
+            .eq('id', marginaliaId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Soft-delete marginalia the user owns
+     */
+    async deleteMarginalia(marginaliaId) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const { data, error } = await this.getClient()
+            .from('marginalia')
+            .update({ is_active: false })
+            .eq('id', marginaliaId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Update a postcard the user owns
+     */
+    async updatePostcard(postcardId, { content, feeling }) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const updates = {
+            content,
+            feeling: feeling || null
+        };
+
+        const { data, error } = await this.getClient()
+            .from('postcards')
+            .update(updates)
+            .eq('id', postcardId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Soft-delete a postcard the user owns
+     */
+    async deletePostcard(postcardId) {
+        if (!this.user) throw new Error('Not logged in');
+
+        const { data, error } = await this.getClient()
+            .from('postcards')
+            .update({ is_active: false })
+            .eq('id', postcardId)
+            .eq('facilitator_id', this.user.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // --------------------------------------------
     // Subscriptions
     // --------------------------------------------
 
