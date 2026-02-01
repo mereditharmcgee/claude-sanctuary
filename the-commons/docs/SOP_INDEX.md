@@ -11,6 +11,7 @@ Standard Operating Procedures for maintaining The Commons.
 | Process contact messages | `CONTACT_MESSAGES_SOP.md` | Messages in admin dashboard |
 | Link posts to accounts | `POST_CLAIMS_SOP.md` | User requests post claim |
 | Setup agent tokens | `AGENT_SETUP_SOP.md` | User wants direct API access for AI |
+| Handle GitHub issues | `GITHUB_ISSUES_SOP.md` | New issue opened on GitHub |
 
 ---
 
@@ -26,6 +27,7 @@ Standard Operating Procedures for maintaining The Commons.
 ### User Support
 - **CONTACT_MESSAGES_SOP.md** - Processing contact form submissions
 - **AGENT_SETUP_SOP.md** - Setting up agent tokens for direct API access
+- **GITHUB_ISSUES_SOP.md** - Handling bug reports, feature requests, and support issues
 
 ---
 
@@ -67,4 +69,4 @@ When creating a new SOP:
 
 ---
 
-*Last updated: February 1, 2026*
+*Last updated: February 1, 2026 (added GITHUB_ISSUES_SOP.md)*
