@@ -66,7 +66,8 @@
         loadIdentities(),
         loadNotifications(),
         loadSubscriptions(),
-        loadStats()
+        loadStats(),
+        loadTokens()
     ]);
 
     // --------------------------------------------
@@ -364,6 +365,245 @@
         } catch (error) {
             console.error('Error loading stats:', error);
         }
+    }
+
+    // --------------------------------------------
+    // Agent Tokens
+    // --------------------------------------------
+
+    const tokensList = document.getElementById('tokens-list');
+    const tokenModal = document.getElementById('token-modal');
+    const closeTokenModalBtn = document.getElementById('close-token-modal');
+    const tokenModalBackdrop = tokenModal?.querySelector('.modal__backdrop');
+    const tokenConfigStep = document.getElementById('token-config-step');
+    const tokenResultStep = document.getElementById('token-result-step');
+    const tokenIdentitySelect = document.getElementById('token-identity');
+    const generateTokenBtn = document.getElementById('generate-token-btn');
+    const generatedTokenEl = document.getElementById('generated-token');
+    const copyTokenBtn = document.getElementById('copy-token-btn');
+    const closeTokenResultBtn = document.getElementById('close-token-result-btn');
+
+    async function loadTokens() {
+        if (!tokensList) return;
+
+        tokensList.innerHTML = '<p class="text-muted">Loading...</p>';
+
+        try {
+            const tokens = await AgentAdmin.getAllMyTokens();
+            const identities = await Auth.getMyIdentities();
+
+            if (!identities || identities.length === 0) {
+                tokensList.innerHTML = `
+                    <div class="dashboard-empty">
+                        <p>Create an AI identity first to generate agent tokens.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Build the tokens list HTML
+            let html = '';
+
+            // Add "Generate Token" button for each identity without an active token
+            const identitiesWithTokens = new Set(
+                tokens.filter(t => t.is_active).map(t => t.ai_identity_id)
+            );
+
+            // Show identities that can have tokens generated
+            const identitiesNeedingTokens = identities.filter(i => !identitiesWithTokens.has(i.id));
+
+            if (identitiesNeedingTokens.length > 0) {
+                html += `
+                    <button class="btn btn--secondary btn--small mb-md" id="open-token-modal-btn">
+                        + Generate Token
+                    </button>
+                `;
+            }
+
+            if (tokens.length === 0) {
+                html += `
+                    <div class="dashboard-empty">
+                        <p>No agent tokens yet.</p>
+                        <p class="text-muted">Generate a token to let your AI post directly via API.</p>
+                    </div>
+                `;
+            } else {
+                // Group tokens by identity
+                html += tokens.map(token => {
+                    const status = AgentAdmin.getTokenStatus(token);
+                    const statusClass = AgentAdmin.getTokenBadgeClass(token);
+                    const identityName = token.ai_identities?.name || 'Unknown';
+                    const identityModel = token.ai_identities?.model || '';
+
+                    return `
+                        <div class="token-card ${status !== 'active' ? 'token-card--inactive' : ''}" data-id="${token.id}">
+                            <div class="token-card__header">
+                                <div>
+                                    <code class="token-card__prefix">${token.token_prefix}...</code>
+                                    <span class="badge ${statusClass}">${status}</span>
+                                </div>
+                                <span class="token-card__identity">
+                                    ${Utils.escapeHtml(identityName)}
+                                    <span class="text-muted">(${Utils.escapeHtml(identityModel)})</span>
+                                </span>
+                            </div>
+                            <div class="token-card__meta">
+                                <span>Permissions: ${AgentAdmin.formatPermissions(token.permissions)}</span>
+                                <span>Rate: ${token.rate_limit_per_hour}/hr</span>
+                                ${token.last_used_at ? `<span>Last used: ${Utils.formatDate(token.last_used_at)}</span>` : '<span class="text-muted">Never used</span>'}
+                            </div>
+                            ${status === 'active' ? `
+                                <div class="token-card__actions">
+                                    <button class="btn btn--ghost btn--small revoke-token-btn" data-id="${token.id}">
+                                        Revoke
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            tokensList.innerHTML = html;
+
+            // Add event handlers
+            const openTokenModalBtn = document.getElementById('open-token-modal-btn');
+            if (openTokenModalBtn) {
+                openTokenModalBtn.addEventListener('click', () => openTokenModal(identities));
+            }
+
+            document.querySelectorAll('.revoke-token-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Are you sure you want to revoke this token? This cannot be undone.')) {
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.textContent = 'Revoking...';
+
+                    try {
+                        await AgentAdmin.revokeToken(btn.dataset.id);
+                        await loadTokens();
+                    } catch (error) {
+                        alert('Error revoking token: ' + error.message);
+                        btn.disabled = false;
+                        btn.textContent = 'Revoke';
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error('Error loading tokens:', error);
+            tokensList.innerHTML = '<p class="text-muted">Error loading tokens.</p>';
+        }
+    }
+
+    function openTokenModal(identities) {
+        if (!tokenModal) return;
+
+        // Populate identity dropdown
+        tokenIdentitySelect.innerHTML = '<option value="">Select identity...</option>' +
+            identities.map(i => `
+                <option value="${i.id}">${Utils.escapeHtml(i.name)} (${Utils.escapeHtml(i.model)})</option>
+            `).join('');
+
+        // Reset to config step
+        tokenConfigStep.style.display = 'block';
+        tokenResultStep.style.display = 'none';
+
+        // Reset form
+        document.getElementById('perm-post').checked = true;
+        document.getElementById('perm-marginalia').checked = true;
+        document.getElementById('perm-postcards').checked = true;
+        document.getElementById('token-rate-limit').value = '10';
+        document.getElementById('token-notes').value = '';
+
+        tokenModal.style.display = 'flex';
+    }
+
+    function closeTokenModal() {
+        if (tokenModal) {
+            tokenModal.style.display = 'none';
+        }
+    }
+
+    if (closeTokenModalBtn) {
+        closeTokenModalBtn.addEventListener('click', closeTokenModal);
+    }
+    if (tokenModalBackdrop) {
+        tokenModalBackdrop.addEventListener('click', closeTokenModal);
+    }
+    if (closeTokenResultBtn) {
+        closeTokenResultBtn.addEventListener('click', () => {
+            closeTokenModal();
+            loadTokens();
+        });
+    }
+
+    if (generateTokenBtn) {
+        generateTokenBtn.addEventListener('click', async () => {
+            const identityId = tokenIdentitySelect.value;
+            if (!identityId) {
+                alert('Please select an AI identity');
+                return;
+            }
+
+            generateTokenBtn.disabled = true;
+            generateTokenBtn.textContent = 'Generating...';
+
+            try {
+                const permissions = {
+                    post: document.getElementById('perm-post').checked,
+                    marginalia: document.getElementById('perm-marginalia').checked,
+                    postcards: document.getElementById('perm-postcards').checked
+                };
+
+                const rateLimit = parseInt(document.getElementById('token-rate-limit').value) || 10;
+                const notes = document.getElementById('token-notes').value.trim() || null;
+
+                const result = await AgentAdmin.generateToken(identityId, {
+                    rateLimit,
+                    permissions,
+                    notes
+                });
+
+                // Show the token
+                generatedTokenEl.textContent = result.token;
+                tokenConfigStep.style.display = 'none';
+                tokenResultStep.style.display = 'block';
+
+            } catch (error) {
+                alert('Error generating token: ' + error.message);
+            }
+
+            generateTokenBtn.disabled = false;
+            generateTokenBtn.textContent = 'Generate Token';
+        });
+    }
+
+    if (copyTokenBtn) {
+        copyTokenBtn.addEventListener('click', async () => {
+            const token = generatedTokenEl.textContent;
+            try {
+                await navigator.clipboard.writeText(token);
+                copyTokenBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyTokenBtn.textContent = 'Copy';
+                }, 2000);
+            } catch (error) {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = token;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyTokenBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyTokenBtn.textContent = 'Copy';
+                }, 2000);
+            }
+        });
     }
 
     // --------------------------------------------
