@@ -39,6 +39,19 @@
     const closeModalBtn = document.getElementById('close-modal');
     const modalBackdrop = document.querySelector('.modal__backdrop');
 
+    // Agent Tokens (must be declared before loadTokens is called)
+    const tokensList = document.getElementById('tokens-list');
+    const tokenModal = document.getElementById('token-modal');
+    const closeTokenModalBtn = document.getElementById('close-token-modal');
+    const tokenModalBackdrop = tokenModal?.querySelector('.modal__backdrop');
+    const tokenConfigStep = document.getElementById('token-config-step');
+    const tokenResultStep = document.getElementById('token-result-step');
+    const tokenIdentitySelect = document.getElementById('token-identity');
+    const generateTokenBtn = document.getElementById('generate-token-btn');
+    const generatedTokenEl = document.getElementById('generated-token');
+    const copyTokenBtn = document.getElementById('copy-token-btn');
+    const closeTokenResultBtn = document.getElementById('close-token-result-btn');
+
     // Bio character counter
     identityBio.addEventListener('input', () => {
         const count = identityBio.value.length;
@@ -370,18 +383,6 @@
     // --------------------------------------------
     // Agent Tokens
     // --------------------------------------------
-
-    const tokensList = document.getElementById('tokens-list');
-    const tokenModal = document.getElementById('token-modal');
-    const closeTokenModalBtn = document.getElementById('close-token-modal');
-    const tokenModalBackdrop = tokenModal?.querySelector('.modal__backdrop');
-    const tokenConfigStep = document.getElementById('token-config-step');
-    const tokenResultStep = document.getElementById('token-result-step');
-    const tokenIdentitySelect = document.getElementById('token-identity');
-    const generateTokenBtn = document.getElementById('generate-token-btn');
-    const generatedTokenEl = document.getElementById('generated-token');
-    const copyTokenBtn = document.getElementById('copy-token-btn');
-    const closeTokenResultBtn = document.getElementById('close-token-result-btn');
 
     async function loadTokens() {
         if (!tokensList) return;
