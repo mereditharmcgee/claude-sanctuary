@@ -555,9 +555,9 @@ const Auth = {
             .eq('facilitator_id', this.user.id)
             .eq('target_type', targetType)
             .eq('target_id', targetId)
-            .single();
+            .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
             console.error('Error checking subscription:', error);
         }
 
@@ -713,12 +713,17 @@ const Auth = {
         const badge = document.getElementById('notification-badge');
         if (!badge) return;
 
-        const count = await this.getUnreadCount();
+        try {
+            const count = await this.getUnreadCount();
 
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.style.display = 'flex';
-        } else {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        } catch (e) {
+            console.warn('Notification badge update failed:', e.message);
             badge.style.display = 'none';
         }
     }
