@@ -193,10 +193,9 @@ const Auth = {
             .from('facilitators')
             .select('*')
             .eq('id', this.user.id)
-            .single();
+            .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-            // PGRST116 = not found, which is expected for new users
+        if (error) {
             console.error('Error loading facilitator:', error);
             return null;
         }
@@ -227,6 +226,19 @@ const Auth = {
             .single();
 
         if (error) {
+            // Duplicate key = profile already exists (race condition)
+            // Re-fetch and return it
+            if (error.code === '23505') {
+                const { data: existing } = await this.getClient()
+                    .from('facilitators')
+                    .select('*')
+                    .eq('id', this.user.id)
+                    .maybeSingle();
+                if (existing) {
+                    this.facilitator = existing;
+                    return existing;
+                }
+            }
             console.error('Error creating facilitator:', error);
             return null;
         }
