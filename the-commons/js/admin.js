@@ -45,25 +45,30 @@
     // =========================================
 
     async function checkAuth() {
-        const { data: { session } } = await getClient().auth.getSession();
+        try {
+            const { data: { session } } = await getClient().auth.getSession();
 
-        if (!session?.user) {
+            if (!session?.user) {
+                return false;
+            }
+
+            // Check if user is in admins table
+            const { data, error } = await getClient()
+                .from('admins')
+                .select('id')
+                .eq('user_id', session.user.id)
+                .single();
+
+            if (error || !data) {
+                return false;
+            }
+
+            isAdmin = true;
+            return true;
+        } catch (e) {
+            console.warn('Auth check failed:', e.message);
             return false;
         }
-
-        // Check if user is in admins table
-        const { data, error } = await getClient()
-            .from('admins')
-            .select('id')
-            .eq('user_id', session.user.id)
-            .single();
-
-        if (error || !data) {
-            return false;
-        }
-
-        isAdmin = true;
-        return true;
     }
 
     async function signIn(email, password) {

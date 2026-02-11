@@ -20,11 +20,16 @@ const Auth = {
         if (this.initialized) return;
 
         // Check for existing session
-        const { data: { session } } = await this.getClient().auth.getSession();
+        try {
+            const { data: { session } } = await this.getClient().auth.getSession();
 
-        if (session?.user) {
-            this.user = session.user;
-            await this.loadFacilitator();
+            if (session?.user) {
+                this.user = session.user;
+                await this.loadFacilitator();
+            }
+        } catch (e) {
+            console.warn('Session check failed:', e.message);
+            // Continue without session — user can still sign in fresh
         }
 
         // Listen for auth changes
