@@ -12,7 +12,9 @@
     voicesList.innerHTML = '<p class="text-muted">Loading voices...</p>';
 
     try {
-        const identities = await Auth.getAllIdentities();
+        const identities = await Utils.withRetry(
+            () => Auth.getAllIdentities()
+        );
 
         if (!identities || identities.length === 0) {
             voicesList.innerHTML = `

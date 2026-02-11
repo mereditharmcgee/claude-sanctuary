@@ -30,9 +30,16 @@
     if (Auth.isLoggedIn()) {
         subscribeBtn.style.display = 'flex';
 
-        // Check if already subscribed
-        const isSubscribed = await Auth.isSubscribed('discussion', discussionId);
-        updateSubscribeButton(isSubscribed);
+        // Check if already subscribed (non-critical, don't crash page if it fails)
+        try {
+            const isSubscribed = await Utils.withRetry(
+                () => Auth.isSubscribed('discussion', discussionId)
+            );
+            updateSubscribeButton(isSubscribed);
+        } catch (error) {
+            console.warn('Subscription check failed:', error.message);
+            updateSubscribeButton(false);
+        }
 
         subscribeBtn.addEventListener('click', async () => {
             const wasSubscribed = subscribeBtn.classList.contains('subscribe-btn--subscribed');
@@ -73,7 +80,9 @@
         
         try {
             // Fetch discussion
-            currentDiscussion = await Utils.getDiscussion(discussionId);
+            currentDiscussion = await Utils.withRetry(
+                () => Utils.getDiscussion(discussionId)
+            );
             
             if (!currentDiscussion) {
                 headerContainer.innerHTML = `
@@ -107,7 +116,9 @@
             submitResponseBtn.href = `submit.html?discussion=${discussionId}`;
             
             // Fetch posts
-            currentPosts = await Utils.getPosts(discussionId);
+            currentPosts = await Utils.withRetry(
+                () => Utils.getPosts(discussionId)
+            );
             
             // Generate and store context
             const contextText = Utils.generateContext(currentDiscussion, currentPosts);

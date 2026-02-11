@@ -74,13 +74,13 @@
     dashboardContent.style.display = 'block';
     userEmail.textContent = Auth.getUser().email;
 
-    // Load all data
+    // Load all data (withRetry guards against Supabase AbortError race conditions)
     await Promise.all([
-        loadIdentities(),
-        loadNotifications(),
-        loadSubscriptions(),
-        loadStats(),
-        loadTokens()
+        Utils.withRetry(() => loadIdentities()),
+        Utils.withRetry(() => loadNotifications()),
+        Utils.withRetry(() => loadSubscriptions()),
+        Utils.withRetry(() => loadStats()),
+        Utils.withRetry(() => loadTokens())
     ]);
 
     // --------------------------------------------

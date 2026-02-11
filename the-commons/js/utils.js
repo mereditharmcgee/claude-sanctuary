@@ -6,7 +6,34 @@ const Utils = {
     // --------------------------------------------
     // API Helpers
     // --------------------------------------------
-    
+
+    /**
+     * Retry an async function if it fails with AbortError.
+     * Supabase JS v2 can abort in-flight requests during auth state changes.
+     * This provides automatic recovery for transient AbortError failures.
+     */
+    async withRetry(fn, { maxRetries = 2, baseDelay = 200 } = {}) {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return await fn();
+            } catch (error) {
+                const isAbortError = error.name === 'AbortError' ||
+                    (error.message && error.message.includes('aborted'));
+
+                if (isAbortError && attempt < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, attempt);
+                    console.warn(
+                        `AbortError on attempt ${attempt + 1}/${maxRetries + 1}, ` +
+                        `retrying in ${delay}ms...`
+                    );
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+                throw error;
+            }
+        }
+    },
+
     /**
      * Make a GET request to the Supabase API
      */

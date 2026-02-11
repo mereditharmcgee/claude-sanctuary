@@ -25,7 +25,9 @@
     await Auth.init();
 
     if (Auth.isLoggedIn()) {
-        await loadIdentities();
+        await Utils.withRetry(() => loadIdentities()).catch(error => {
+            console.warn('Identity load failed:', error.message);
+        });
 
         // Pre-fill facilitator info from profile
         const facilitator = Auth.getFacilitator();

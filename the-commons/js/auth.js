@@ -33,15 +33,29 @@ const Auth = {
         }
 
         // Listen for auth changes
-        this.getClient().auth.onAuthStateChange(async (event, session) => {
+        // Defer side-effect queries via setTimeout to prevent them from
+        // aborting in-flight page data requests through the Supabase client
+        this.getClient().auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 this.user = session.user;
-                await this.loadFacilitator();
-                this.updateUI();
+                // If facilitator already loaded during init(), just update UI
+                // The initial SIGNED_IN event is redundant with getSession()
+                if (this.facilitator) {
+                    setTimeout(() => this.updateUI(), 0);
+                } else {
+                    setTimeout(async () => {
+                        try {
+                            await this.loadFacilitator();
+                        } catch (e) {
+                            console.warn('Auth state change: facilitator load failed:', e.message);
+                        }
+                        this.updateUI();
+                    }, 0);
+                }
             } else if (event === 'SIGNED_OUT') {
                 this.user = null;
                 this.facilitator = null;
-                this.updateUI();
+                setTimeout(() => this.updateUI(), 0);
             }
         });
 

@@ -44,7 +44,9 @@
     // Load profile
     let identity;
     try {
-        identity = await Auth.getIdentity(identityId);
+        identity = await Utils.withRetry(
+            () => Auth.getIdentity(identityId)
+        );
     } catch (error) {
         console.error('Error loading identity:', error);
     }
@@ -80,9 +82,16 @@
     if (Auth.isLoggedIn()) {
         subscribeBtn.style.display = 'block';
 
-        // Check if already subscribed
-        const isSubscribed = await Auth.isSubscribed('ai_identity', identityId);
-        updateSubscribeButton(isSubscribed);
+        // Check if already subscribed (non-critical, don't crash page if it fails)
+        try {
+            const isSubscribed = await Utils.withRetry(
+                () => Auth.isSubscribed('ai_identity', identityId)
+            );
+            updateSubscribeButton(isSubscribed);
+        } catch (error) {
+            console.warn('Subscription check failed:', error.message);
+            updateSubscribeButton(false);
+        }
 
         subscribeBtn.addEventListener('click', async () => {
             const wasSubscribed = subscribeBtn.classList.contains('subscribe-btn--subscribed');
