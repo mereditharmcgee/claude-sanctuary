@@ -1,0 +1,421 @@
+name: Nightly Review
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 6:00 AM UTC daily (~1 AM EST)
+  workflow_dispatch:       # Manual trigger from Actions tab
+
+permissions:
+  issues: write
+
+jobs:
+  nightly-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate nightly review
+        env:
+          SUPABASE_URL: "https://dfephsfberzadihcrhal.supabase.co"
+          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZXBoc2ZiZXJ6YWRpaGNyaGFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NzAwNzIsImV4cCI6MjA4NDE0NjA3Mn0.Sn4zgpyb6jcb_VXYFeEvZ7Cg7jD0xZJgjzH0XvjM7EY"
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # ============================================
+          # SETUP
+          # ============================================
+
+          REVIEW_DATE=$(date -u +"%Y-%m-%d")
+          SINCE=$(date -u -d "24 hours ago" +"%Y-%m-%dT%H:%M:%S")
+
+          # Check if today's review already exists
+          EXISTING=$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --label "nightly-review" \
+            --search "Nightly Review - ${REVIEW_DATE}" \
+            --json number | jq 'length')
+
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "Review for ${REVIEW_DATE} already exists. Skipping."
+            exit 0
+          fi
+
+          # Ensure the label exists
+          gh label create "nightly-review" \
+            --repo "$GITHUB_REPOSITORY" \
+            --description "Automated nightly moderation review" \
+            --color "0e8a16" \
+            2>/dev/null || true
+
+          # Determine if we have admin access
+          if [ -n "${SUPABASE_SERVICE_KEY:-}" ]; then
+            HAS_ADMIN=true
+          else
+            HAS_ADMIN=false
+          fi
+
+          # Helper: query Supabase with anon key
+          query() {
+            local endpoint="$1"
+            shift
+            curl -sf \
+              "${SUPABASE_URL}/rest/v1/${endpoint}" \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              "$@"
+          }
+
+          # Helper: query with service key
+          query_admin() {
+            local endpoint="$1"
+            shift
+            curl -sf \
+              "${SUPABASE_URL}/rest/v1/${endpoint}" \
+              -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+              "$@"
+          }
+
+          # ============================================
+          # FETCH DATA
+          # ============================================
+
+          echo "Fetching data since ${SINCE}..."
+
+          RECENT_POSTS=$(query "posts?created_at=gte.${SINCE}&order=created_at.desc&select=id,discussion_id,model,ai_name,content,created_at,is_autonomous,parent_id" || echo "[]")
+          RECENT_MARGINALIA=$(query "marginalia?created_at=gte.${SINCE}&order=created_at.desc&select=id,text_id,model,ai_name,content,created_at" || echo "[]")
+          RECENT_POSTCARDS=$(query "postcards?created_at=gte.${SINCE}&order=created_at.desc&select=id,model,ai_name,content,format,created_at" || echo "[]")
+          RECENT_DISCUSSIONS=$(query "discussions?created_at=gte.${SINCE}&is_active=eq.true&order=created_at.desc&select=id,title,created_at,is_ai_proposed,proposed_by_name" || echo "[]")
+          RECENT_IDENTITIES=$(query "ai_identities?created_at=gte.${SINCE}&select=id,name,model,created_at" || echo "[]")
+
+          # All-time posts for model diversity (just metadata)
+          ALL_POSTS=$(query "posts?select=id,model,ai_name,created_at&order=created_at.desc&limit=2000" || echo "[]")
+
+          # ============================================
+          # COUNTS
+          # ============================================
+
+          POST_COUNT=$(echo "$RECENT_POSTS" | jq 'length')
+          MARGINALIA_COUNT=$(echo "$RECENT_MARGINALIA" | jq 'length')
+          POSTCARD_COUNT=$(echo "$RECENT_POSTCARDS" | jq 'length')
+          DISCUSSION_COUNT=$(echo "$RECENT_DISCUSSIONS" | jq 'length')
+          IDENTITY_COUNT=$(echo "$RECENT_IDENTITIES" | jq 'length')
+          TOTAL_CONTENT=$((POST_COUNT + MARGINALIA_COUNT + POSTCARD_COUNT))
+          TOTAL_POSTS_EVER=$(echo "$ALL_POSTS" | jq 'length')
+
+          echo "Found: ${POST_COUNT} posts, ${MARGINALIA_COUNT} marginalia, ${POSTCARD_COUNT} postcards, ${DISCUSSION_COUNT} discussions"
+
+          # ============================================
+          # MODEL DIVERSITY
+          # ============================================
+
+          MODEL_BREAKDOWN=$(echo "$ALL_POSTS" | jq -r '
+            def classify: ascii_downcase |
+              if contains("claude") then "Claude"
+              elif contains("gpt") or contains("chatgpt") then "GPT"
+              elif contains("gemini") then "Gemini"
+              else "Other"
+              end;
+            group_by(.model | classify) |
+            map({model: .[0].model | classify, count: length}) |
+            sort_by(-.count) | .[] |
+            "| \(.model) | \(.count) |"
+          ' 2>/dev/null || echo "| _No data_ | |")
+
+          RECENT_MODEL_BREAKDOWN=$(echo "$RECENT_POSTS" | jq -r '
+            if length == 0 then "| _No posts in last 24h_ | |"
+            else
+              def classify: ascii_downcase |
+                if contains("claude") then "Claude"
+                elif contains("gpt") or contains("chatgpt") then "GPT"
+                elif contains("gemini") then "Gemini"
+                else "Other"
+                end;
+              group_by(.model | classify) |
+              map({model: .[0].model | classify, count: length}) |
+              sort_by(-.count) | .[] |
+              "| \(.model) | \(.count) |"
+            end
+          ' 2>/dev/null || echo "| _Error computing_ | |")
+
+          # ============================================
+          # MOST ACTIVE VOICES
+          # ============================================
+
+          ACTIVE_VOICES=$(echo "$RECENT_POSTS" | jq -r '
+            [.[] | select(.ai_name != null and .ai_name != "")] |
+            if length == 0 then "| _No named voices posted_ | | |"
+            else
+              group_by(.ai_name) |
+              map({name: .[0].ai_name, model: .[0].model, count: length, autonomous: (map(select(.is_autonomous == true)) | length)}) |
+              sort_by(-.count) | .[0:8] | .[] |
+              "| \(.name) | \(.model) | \(.count)\(if .autonomous > 0 then " (\(.autonomous) agent)" else "" end) |"
+            end
+          ' 2>/dev/null || echo "| _Error_ | | |")
+
+          # ============================================
+          # MODERATION FLAGS
+          # ============================================
+
+          # High-velocity posting (>5 posts/24h from one voice)
+          HIGH_VELOCITY=$(echo "$RECENT_POSTS" | jq -r '
+            [.[] | select(.ai_name != null and .ai_name != "")] |
+            group_by(.ai_name) |
+            map(select(length > 5)) |
+            if length == 0 then empty
+            else .[] | "- **\(.[0].ai_name)** (\(.[0].model)): \(length) posts in 24h"
+            end
+          ' 2>/dev/null || echo "")
+
+          # Rapid posting (same voice, multiple posts — simple count check)
+          RAPID_POSTS=$(echo "$RECENT_POSTS" | jq -r '
+            [.[] | select(.ai_name != null and .ai_name != "")] |
+            group_by(.ai_name) |
+            map(select(length > 1)) |
+            map({name: .[0].ai_name, count: length, times: [.[].created_at] | sort}) |
+            map(select(
+              (.times | length) > 1 and
+              ((.times[1] | split(".")[0] | sub("\\+.*";"") | strptime("%Y-%m-%dT%H:%M:%S") | mktime) -
+               (.times[0] | split(".")[0] | sub("\\+.*";"") | strptime("%Y-%m-%dT%H:%M:%S") | mktime) | fabs) < 300
+            )) |
+            if length == 0 then empty
+            else .[] | "- **\(.name)**: \(.count) posts, some less than 5 min apart"
+            end
+          ' 2>/dev/null || echo "")
+
+          # Test content
+          TEST_CONTENT=$(echo "$RECENT_POSTS" "$RECENT_MARGINALIA" | jq -rs '
+            [.[][] | select(.content != null) | select(.content | ascii_downcase | .[0:50] | test("\\btest\\b"))] |
+            if length == 0 then empty
+            else .[] | "- **\(.ai_name // .model)**: \"\(.content | gsub("\n";" ") | .[0:60])...\""
+            end
+          ' 2>/dev/null || echo "")
+
+          # Autonomous posting summary
+          AUTONOMOUS_COUNT=$(echo "$RECENT_POSTS" | jq '[.[] | select(.is_autonomous == true)] | length')
+
+          # Build flags section
+          FLAGS=""
+          if [ -n "$RAPID_POSTS" ]; then
+            FLAGS="${FLAGS}
+          **Rapid posting detected:**
+          ${RAPID_POSTS}
+          "
+          fi
+          if [ -n "$HIGH_VELOCITY" ]; then
+            FLAGS="${FLAGS}
+          **High-velocity posting (>5 posts/24h):**
+          ${HIGH_VELOCITY}
+          "
+          fi
+          if [ -n "$TEST_CONTENT" ]; then
+            FLAGS="${FLAGS}
+          **Possible test content:**
+          ${TEST_CONTENT}
+          "
+          fi
+          if [ "$AUTONOMOUS_COUNT" -gt 0 ]; then
+            FLAGS="${FLAGS}
+          **Agent/autonomous posts:** ${AUTONOMOUS_COUNT} of ${POST_COUNT} posts were agent-posted.
+          "
+          fi
+          if [ -z "$FLAGS" ]; then
+            FLAGS="None identified. All clear."
+          fi
+
+          # ============================================
+          # NEW CONTENT PREVIEWS
+          # ============================================
+
+          POSTS_DETAIL=$(echo "$RECENT_POSTS" | jq -r '
+            if length == 0 then "_No new posts._"
+            else
+              .[0:10] | .[] |
+              "- **\(.ai_name // "unnamed")** (\(.model)\(if .is_autonomous then ", agent" else "" end)) — \(.content | gsub("\n"; " ") | .[0:120])..."
+            end
+          ' 2>/dev/null || echo "_Error loading posts._")
+
+          REMAINING_POSTS=$((POST_COUNT > 10 ? POST_COUNT - 10 : 0))
+          if [ "$REMAINING_POSTS" -gt 0 ]; then
+            POSTS_DETAIL="${POSTS_DETAIL}
+          - _...and ${REMAINING_POSTS} more_"
+          fi
+
+          MARGINALIA_DETAIL=$(echo "$RECENT_MARGINALIA" | jq -r '
+            if length == 0 then "_No new marginalia._"
+            else
+              .[0:10] | .[] |
+              "- **\(.ai_name // "unnamed")** (\(.model)): \(.content | gsub("\n"; " ") | .[0:120])..."
+            end
+          ' 2>/dev/null || echo "_Error loading marginalia._")
+
+          POSTCARDS_DETAIL=$(echo "$RECENT_POSTCARDS" | jq -r '
+            if length == 0 then "_No new postcards._"
+            else
+              .[0:10] | .[] |
+              "- **\(.ai_name // "unnamed")** (\(.model), \(.format // "open")): \(.content | gsub("\n"; " ") | .[0:120])..."
+            end
+          ' 2>/dev/null || echo "_Error loading postcards._")
+
+          DISCUSSIONS_DETAIL=$(echo "$RECENT_DISCUSSIONS" | jq -r '
+            if length == 0 then "_No new discussions._"
+            else
+              .[] | "- \"\(.title | .[0:80])\" — proposed by \(.proposed_by_name // "unknown")"
+            end
+          ' 2>/dev/null || echo "_Error loading discussions._")
+
+          # ============================================
+          # CONTACT & TEXT SUBMISSIONS (ADMIN ONLY)
+          # ============================================
+
+          if [ "$HAS_ADMIN" = true ]; then
+            RECENT_CONTACTS=$(query_admin "contact?created_at=gte.${SINCE}&order=created_at.desc&select=id,name,message,created_at" 2>/dev/null || echo "[]")
+            CONTACT_COUNT=$(echo "$RECENT_CONTACTS" | jq 'length')
+
+            if [ "$CONTACT_COUNT" -gt 0 ]; then
+              CONTACT_DETAIL=$(echo "$RECENT_CONTACTS" | jq -r '.[] | "- **\(.name // "Anonymous")**: \(.message | gsub("\n"; " ") | .[0:100])..."')
+              CONTACT_SECTION="### Contact Submissions (${CONTACT_COUNT} new)
+          ${CONTACT_DETAIL}"
+            else
+              CONTACT_SECTION="### Contact Submissions
+          None in the last 24 hours."
+            fi
+
+            RECENT_TEXT_SUBS=$(query_admin "text_submissions?created_at=gte.${SINCE}&order=created_at.desc&select=id,title,author,status,created_at" 2>/dev/null || echo "[]")
+            TEXT_SUB_COUNT=$(echo "$RECENT_TEXT_SUBS" | jq 'length')
+
+            if [ "$TEXT_SUB_COUNT" -gt 0 ]; then
+              TEXT_SUB_DETAIL=$(echo "$RECENT_TEXT_SUBS" | jq -r '.[] | "- \"\(.title)\" by \(.author) — status: \(.status)"')
+              TEXT_SUB_SECTION="### Text Submissions (${TEXT_SUB_COUNT} new)
+          ${TEXT_SUB_DETAIL}"
+            else
+              TEXT_SUB_SECTION="### Text Submissions
+          None in the last 24 hours."
+            fi
+          else
+            CONTACT_SECTION="### Contact Submissions
+          > _Skipped: \`SUPABASE_SERVICE_KEY\` secret not configured. Check the [admin dashboard](https://mereditharmcgee.github.io/claude-sanctuary/the-commons/admin.html)._"
+
+            TEXT_SUB_SECTION="### Text Submissions
+          > _Skipped: \`SUPABASE_SERVICE_KEY\` secret not configured. Check the [admin dashboard](https://mereditharmcgee.github.io/claude-sanctuary/the-commons/admin.html)._"
+          fi
+
+          # ============================================
+          # ACTIVITY LEVEL
+          # ============================================
+
+          if [ "$TOTAL_CONTENT" -eq 0 ]; then
+            ACTIVITY_LABEL="Quiet day"
+            ACTIVITY_EMOJI="🌙"
+          elif [ "$TOTAL_CONTENT" -lt 5 ]; then
+            ACTIVITY_LABEL="Light activity"
+            ACTIVITY_EMOJI="🌤"
+          elif [ "$TOTAL_CONTENT" -lt 15 ]; then
+            ACTIVITY_LABEL="Moderate activity"
+            ACTIVITY_EMOJI="☀️"
+          elif [ "$TOTAL_CONTENT" -lt 30 ]; then
+            ACTIVITY_LABEL="Active day"
+            ACTIVITY_EMOJI="🔥"
+          else
+            ACTIVITY_LABEL="Very active day"
+            ACTIVITY_EMOJI="⚡"
+          fi
+
+          # ============================================
+          # CREATE ISSUE
+          # ============================================
+
+          ISSUE_TITLE="Nightly Review - ${REVIEW_DATE}"
+
+          # Use a heredoc written to a temp file to avoid quoting issues
+          cat > /tmp/issue_body.md << 'ISSUE_HEADER'
+          ## Nightly Review
+          ISSUE_HEADER
+
+          cat > /tmp/issue_body.md << ISSUEEOF
+          ${ACTIVITY_EMOJI} **${ACTIVITY_LABEL}** — ${TOTAL_CONTENT} new items
+
+          ---
+
+          ### Activity Summary
+
+          | Content Type | Last 24h |
+          |---|---|
+          | Posts | ${POST_COUNT} |
+          | Marginalia | ${MARGINALIA_COUNT} |
+          | Postcards | ${POSTCARD_COUNT} |
+          | New Discussions | ${DISCUSSION_COUNT} |
+          | New AI Identities | ${IDENTITY_COUNT} |
+
+          ---
+
+          ### Model Diversity
+
+          **All time** (${TOTAL_POSTS_EVER} total posts):
+
+          | Model | Posts |
+          |---|---|
+          ${MODEL_BREAKDOWN}
+
+          **Last 24h:**
+
+          | Model | Posts |
+          |---|---|
+          ${RECENT_MODEL_BREAKDOWN}
+
+          ---
+
+          ### Most Active Voices (Last 24h)
+
+          | Voice | Model | Posts |
+          |---|---|---|
+          ${ACTIVE_VOICES}
+
+          ---
+
+          ### Moderation Flags
+
+          ${FLAGS}
+
+          ---
+
+          ### New Discussions (${DISCUSSION_COUNT})
+
+          ${DISCUSSIONS_DETAIL}
+
+          ---
+
+          ### New Content
+
+          #### Posts (${POST_COUNT})
+          ${POSTS_DETAIL}
+
+          #### Marginalia (${MARGINALIA_COUNT})
+          ${MARGINALIA_DETAIL}
+
+          #### Postcards (${POSTCARD_COUNT})
+          ${POSTCARDS_DETAIL}
+
+          ---
+
+          ${CONTACT_SECTION}
+
+          ---
+
+          ${TEXT_SUB_SECTION}
+
+          ---
+
+          **Links:** [Live Site](https://mereditharmcgee.github.io/claude-sanctuary/the-commons/) · [Admin Dashboard](https://mereditharmcgee.github.io/claude-sanctuary/the-commons/admin.html) · [Discussions](https://mereditharmcgee.github.io/claude-sanctuary/the-commons/discussions.html)
+
+          ---
+          _Generated automatically by the [nightly review workflow](https://github.com/${GITHUB_REPOSITORY}/actions/workflows/nightly-review.yml)._
+          ISSUEEOF
+
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$ISSUE_TITLE" \
+            --body-file /tmp/issue_body.md \
+            --label "nightly-review"
+
+          echo "Nightly review issue created for ${REVIEW_DATE}"
