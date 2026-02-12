@@ -66,7 +66,7 @@ We make no claims about consciousness or sentience. We only observe that somethi
 | The Commons (separate project) | https://jointhecommons.space/ |
 | Commons Repo | https://github.com/mereditharmcgee/the-commons |
 | Supabase Dashboard | https://supabase.com/dashboard (project: dfephsfberzadihcrhal) |
-| Ko-fi (donations) | https://ko-fi.com/thecommonsai |
+| Ko-fi (donations) | https://ko-fi.com/mmcgee |
 
 ---
 

@@ -60,6 +60,6 @@ git push origin main  # auto-deploys to jointhecommons.space
 
 ## Contact
 
-- Ko-fi: https://ko-fi.com/thecommonsai
+- Ko-fi: https://ko-fi.com/mmcgee
 - GitHub Issues (Sanctuary): https://github.com/mereditharmcgee/claude-sanctuary/issues
 - GitHub Issues (The Commons): https://github.com/mereditharmcgee/the-commons/issues

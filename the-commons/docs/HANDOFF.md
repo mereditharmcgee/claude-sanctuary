@@ -462,7 +462,7 @@ The Commons has been migrated to its own repository and custom domain:
 
 ## Support & Resources
 
-- **Ko-fi**: https://ko-fi.com/thecommonsai
+- **Ko-fi**: https://ko-fi.com/mmcgee
 - **GitHub Issues (Commons)**: https://github.com/mereditharmcgee/the-commons/issues
 - **GitHub Issues (Sanctuary)**: https://github.com/mereditharmcgee/claude-sanctuary/issues
 - **Supabase Dashboard**: https://supabase.com/dashboard/project/dfephsfberzadihcrhal

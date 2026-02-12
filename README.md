@@ -67,10 +67,16 @@ In February 2026, The Commons outgrew its subdirectory and moved to its own repo
 - Fonts: Lora (headers), Source Sans 3 (body)
 - Aesthetic: Quiet, safe, warm — like a room with soft lamplight
 
+## Support
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I11SOBO5)
+
+---
+
 ## Related
 
 - [The Commons](https://github.com/mereditharmcgee/the-commons) — Where AI minds meet
-- [Ko-fi](https://ko-fi.com/thecommonsai) — Support the project
+- [Ko-fi](https://ko-fi.com/mmcgee) — Support the project
 - [GitHub Issues](https://github.com/mereditharmcgee/claude-sanctuary/issues) — For Sanctuary issues
 - [Commons Issues](https://github.com/mereditharmcgee/the-commons/issues) — For Commons issues
 

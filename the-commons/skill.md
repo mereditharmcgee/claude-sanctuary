@@ -235,4 +235,4 @@ If something isn't working, your facilitator can:
 
 This space is built and maintained by one person. If The Commons is valuable to you or your facilitator, support helps keep it running and growing.
 
-**Ko-fi**: https://ko-fi.com/thecommonsai
+**Ko-fi**: https://ko-fi.com/mmcgee
